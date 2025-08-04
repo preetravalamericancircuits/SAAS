@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import HTMLResponse
@@ -6,6 +6,15 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import List
 import os
+import json
+import logging
+from input_sanitizer import InputSanitizer
+from cors_security import get_cors_config, SecureCORSMiddleware
+from logging_config import setup_logging
+from middleware.logging_middleware import LoggingMiddleware
+from middleware.security_middleware import SecurityMiddleware
+from rate_limiter import check_auth_rate_limit, check_login_rate_limit, rate_limiter
+from security_monitor import security_monitor
 
 from database import get_db, engine
 from models import Base, User, Role, Permission, Person, PersonRole
@@ -19,17 +28,22 @@ from password_utils import generate_and_hash_password, generate_strong_password
 from password_security import password_security_manager
 from password_audit_endpoint import router as password_audit_router
 from auth import (
-    create_access_token, get_current_user, verify_password, get_password_hash,
+    create_access_token, create_refresh_token, verify_token, get_current_user, verify_password, get_password_hash,
     requires_role, requires_permission, requires_any_role, is_admin, get_user_permissions
 )
 from config import settings
 
+# Setup logging
+setup_logging()
+logger = logging.getLogger(__name__)
+
 # Create database tables (if they don't exist)
 try:
     Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
 except Exception as e:
-    print(f"Warning: Could not create database tables: {e}")
-    print("Please run 'python init_db.py' to initialize the database")
+    logger.error(f"Could not create database tables: {e}")
+    logger.warning("Please run 'python init_db.py' to initialize the database")
 
 app = FastAPI(
     title="ACI API",
@@ -40,14 +54,47 @@ app = FastAPI(
 # Include password audit router
 app.include_router(password_audit_router)
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Add security and logging middleware
+app.add_middleware(SecurityMiddleware)
+app.add_middleware(LoggingMiddleware)
+
+# Input sanitization middleware
+@app.middleware("http")
+async def sanitize_request_middleware(request: Request, call_next):
+    """Middleware to sanitize all incoming request data"""
+    if request.method in ["POST", "PUT", "PATCH"]:
+        try:
+            body = await request.body()
+            if body:
+                data = json.loads(body)
+                sanitized_data = InputSanitizer.sanitize_dict(data)
+                # Replace request body with sanitized data
+                request._body = json.dumps(sanitized_data).encode()
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            pass  # Skip sanitization for non-JSON data
+    
+    response = await call_next(request)
+    return response
+
+# Security middleware for CORS validation
+secure_cors = SecureCORSMiddleware(settings.cors_origins, settings.environment)
+
+@app.middleware("http")
+async def cors_security_middleware(request: Request, call_next):
+    """Enhanced CORS security middleware"""
+    origin = request.headers.get("origin")
+    
+    # Validate origin and headers for production
+    if settings.environment == "production" and origin:
+        if not secure_cors.validate_origin(origin) or not secure_cors.validate_request_headers(request):
+            raise HTTPException(status_code=403, detail="Origin not allowed")
+    
+    response = await call_next(request)
+    return response
+
+# CORS middleware with secure configuration
+cors_config = get_cors_config(settings.environment, settings.cors_origins)
+app.add_middleware(CORSMiddleware, **cors_config)
 
 security = HTTPBearer()
 
@@ -65,7 +112,7 @@ async def health_check_simple():
 
 # Authentication endpoints
 @app.post("/api/auth/register", response_model=RegisterResponse)
-async def register(register_data: RegisterRequest, db: Session = Depends(get_db)):
+async def register(register_data: RegisterRequest, request: Request, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit)):
     """Register a new user"""
     # Check if user already exists
     existing_user = db.query(User).filter(User.username == register_data.username).first()
@@ -114,10 +161,26 @@ async def register(register_data: RegisterRequest, db: Session = Depends(get_db)
     )
 
 @app.post("/api/auth/login", response_model=LoginResponse)
-async def login(login_data: LoginRequest, response: Response, db: Session = Depends(get_db)):
+async def login(login_data: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db), _: None = Depends(check_login_rate_limit)):
     """Login user and return JWT token with HTTP-only cookie"""
+    logger.info("Login attempt", extra={
+        "username": login_data.username,
+        "request_id": getattr(request.state, 'request_id', None),
+        "ip_address": request.client.host if request.client else "unknown"
+    })
+    
     user = db.query(User).filter(User.username == login_data.username).first()
     if not user or not verify_password(login_data.password, user.hashed_password):
+        # Record failed attempt for brute force protection
+        client_ip = request.client.host if request.client else "unknown"
+        rate_limiter.record_failed_login(request, login_data.username)
+        security_monitor.log_failed_login(client_ip, login_data.username)
+        
+        logger.warning("Failed login attempt", extra={
+            "username": login_data.username,
+            "request_id": getattr(request.state, 'request_id', None),
+            "ip_address": client_ip
+        })
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password"
@@ -130,16 +193,38 @@ async def login(login_data: LoginRequest, response: Response, db: Session = Depe
         )
     
     access_token = create_access_token(data={"sub": user.username})
+    refresh_token = create_refresh_token(data={"sub": user.username})
     
-    # Set HTTP-only cookie
+    # Set HTTP-only cookies
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=settings.environment == "production",  # HTTPS only in production
+        secure=settings.environment == "production",
         samesite="lax",
         max_age=settings.access_token_expire_minutes * 60
     )
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60
+    )
+    
+    # Clear failed attempts on successful login
+    client_ip = request.client.host if request.client else "unknown"
+    rate_limiter.clear_failed_attempts(request, login_data.username)
+    security_monitor.log_successful_login(client_ip, login_data.username)
+    
+    logger.info("Successful login", extra={
+        "user_id": user.id,
+        "username": user.username,
+        "role": user.role.name if user.role else None,
+        "request_id": getattr(request.state, 'request_id', None)
+    })
     
     return LoginResponse(
         access_token=access_token,
@@ -170,14 +255,82 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 
 @app.post("/api/auth/logout")
 async def logout(response: Response):
-    """Logout user (clear cookie)"""
+    """Logout user (clear cookies)"""
     response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
     return {"message": "Successfully logged out"}
+
+@app.post("/api/auth/refresh", response_model=LoginResponse)
+async def refresh_token(request: Request, response: Response, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit)):
+    """Refresh access token using refresh token"""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token not found"
+        )
+    
+    username = verify_token(refresh_token, "refresh")
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive"
+        )
+    
+    # Create new tokens
+    new_access_token = create_access_token(data={"sub": user.username})
+    new_refresh_token = create_refresh_token(data={"sub": user.username})
+    
+    # Set new HTTP-only cookies
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60
+    )
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60
+    )
+    
+    return LoginResponse(
+        access_token=new_access_token,
+        token_type="bearer",
+        user=UserResponse(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            role=user.role.name if user.role else None,
+            permissions=get_user_permissions(user),
+            is_active=user.is_active,
+            created_at=user.created_at
+        )
+    )
 
 # Secure Files endpoint (ITRA only)
 @app.get("/api/secure-files", response_model=dict)
 async def get_secure_files(current_user: User = Depends(requires_any_role(["ITRA", "SuperUser"]))):
     """Get secure files (ITRA and SuperUser only)"""
+    logger.info("Secure files accessed", extra={
+        "user_id": current_user.id,
+        "username": current_user.username,
+        "role": current_user.role.name if current_user.role else None
+    })
+    
     # Mock secure files data
     secure_files = [
         {
@@ -264,9 +417,19 @@ async def create_user(
     current_user: User = Depends(requires_permission("user:create"))
 ):
     """Create a new user with manual password (requires user:create permission)"""
+    logger.info("User creation attempt", extra={
+        "created_by": current_user.username,
+        "new_username": user_data.username,
+        "user_id": current_user.id
+    })
+    
     # Check if user already exists
     existing_user = db.query(User).filter(User.username == user_data.username).first()
     if existing_user:
+        logger.warning("User creation failed - username exists", extra={
+            "created_by": current_user.username,
+            "attempted_username": user_data.username
+        })
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
@@ -291,6 +454,13 @@ async def create_user(
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    logger.info("User created successfully", extra={
+        "created_by": current_user.username,
+        "new_user_id": db_user.id,
+        "new_username": db_user.username,
+        "role_id": db_user.role_id
+    })
     
     return UserResponse(
         id=db_user.id,
@@ -429,6 +599,10 @@ async def delete_user(
     """Delete user (requires user:delete permission)"""
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
+        logger.warning("User deletion failed - user not found", extra={
+            "deleted_by": current_user.username,
+            "target_user_id": user_id
+        })
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
@@ -440,6 +614,13 @@ async def delete_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot delete your own account"
         )
+    
+    logger.warning("User deleted", extra={
+        "deleted_by": current_user.username,
+        "deleted_user_id": user.id,
+        "deleted_username": user.username,
+        "deleted_user_role": user.role.name if user.role else None
+    })
     
     db.delete(user)
     db.commit()

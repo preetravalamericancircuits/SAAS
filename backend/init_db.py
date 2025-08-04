@@ -4,16 +4,29 @@ Database initialization script for SAAS application
 Creates tables and seeds initial data
 """
 
+import time
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from database import engine, SessionLocal
 from models import Base, User, Role, Permission, role_permissions
 from auth import get_password_hash
 
 def create_tables():
-    """Create all database tables"""
+    """Create all database tables with retry logic"""
     print("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    print("✅ Tables created successfully")
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("✅ Tables created successfully")
+            return
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                print(f"⚠️ Database connection failed (attempt {attempt + 1}/{max_retries}). Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                raise Exception(f"Failed to create tables after {max_retries} attempts: {e}")
 
 def create_permissions(db: Session):
     """Create default permissions"""
@@ -125,41 +138,75 @@ def create_users(db: Session):
     db.commit()
     print("✅ Users created successfully")
 
+def get_db_session():
+    """Get database session with retry logic"""
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            db = SessionLocal()
+            # Test connection
+            db.execute("SELECT 1")
+            return db
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                print(f"⚠️ Database connection failed (attempt {attempt + 1}/{max_retries}). Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                raise Exception(f"Failed to connect to database after {max_retries} attempts: {e}")
+
 def main():
     """Main initialization function"""
     print("🚀 Initializing SAAS Database...\n")
     
-    # Create tables
-    create_tables()
-    
-    # Create database session
-    db = SessionLocal()
-    
     try:
-        # Create permissions
-        create_permissions(db)
+        # Create tables
+        create_tables()
         
-        # Create roles
-        create_roles(db)
+        # Create database session with retry
+        db = get_db_session()
         
-        # Create users
-        create_users(db)
-        
-        print("\n✅ Database initialization completed successfully!")
-        print("\n👤 Default Users Created:")
-        print("  • preet / password123 (SuperUser)")
-        print("  • admin / admin123 (Admin)")
-        print("  • operator1 / password123 (Operator)")
-        print("  • user1 / password123 (User)")
-        print("  • itra1 / password123 (ITRA)")
-        print("  • manager1 / password123 (Manager)")
-        print("  • guest1 / password123 (Guest)")
-        
+        try:
+            # Create permissions
+            create_permissions(db)
+            
+            # Create roles
+            create_roles(db)
+            
+            # Create users
+            create_users(db)
+            
+            print("\n✅ Database initialization completed successfully!")
+            print("\n👤 Default Users Created:")
+            print("  • preet / password123 (SuperUser)")
+            print("  • admin / admin123 (Admin)")
+            print("  • operator1 / password123 (Operator)")
+            print("  • user1 / password123 (User)")
+            print("  • itra1 / password123 (ITRA)")
+            print("  • manager1 / password123 (Manager)")
+            print("  • guest1 / password123 (Guest)")
+            
+            # Create performance indexes
+            print("\n🚀 Creating performance indexes...")
+            from db_optimizer import create_performance_indexes, analyze_tables
+            create_performance_indexes()
+            analyze_tables()
+            print("✅ Performance indexes created successfully!")
+            
+        except SQLAlchemyError as e:
+            print(f"❌ Database error during initialization: {e}")
+            db.rollback()
+            raise
+        except Exception as e:
+            print(f"❌ Error during initialization: {e}")
+            db.rollback()
+            raise
+        finally:
+            db.close()
+            
     except Exception as e:
-        print(f"❌ Error during initialization: {e}")
-        db.rollback()
-    finally:
-        db.close()
+        print(f"❌ Fatal error: {e}")
+        exit(1)
 
 if __name__ == "__main__":
     main()

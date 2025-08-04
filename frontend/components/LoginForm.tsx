@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EyeIcon, EyeSlashIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { InputValidator } from '@/lib/inputValidator';
 
 interface LoginFormData {
   username: string;
@@ -29,7 +30,10 @@ export default function LoginForm() {
     setError('');
     
     try {
-      const success = await login(data.username, data.password);
+      // Sanitize input data
+      const sanitizedData = InputValidator.sanitizeFormData(data);
+      
+      const success = await login(sanitizedData.username, sanitizedData.password);
       if (!success) {
         setError('Invalid username or password. Please try again.');
       }
@@ -64,7 +68,10 @@ export default function LoginForm() {
                     <Input
                       {...register('username', {
                         required: 'Username is required',
-                        minLength: { value: 3, message: 'Username must be at least 3 characters' }
+                        validate: (value) => {
+                          const result = InputValidator.validateUsername(value);
+                          return result.isValid || result.errors[0];
+                        }
                       })}
                       id="username"
                       type="text"
@@ -87,7 +94,7 @@ export default function LoginForm() {
                     <Input
                       {...register('password', {
                         required: 'Password is required',
-                        minLength: { value: 6, message: 'Password must be at least 6 characters' }
+                        minLength: { value: 8, message: 'Password must be at least 8 characters' }
                       })}
                       id="password"
                       type={showPassword ? 'text' : 'password'}

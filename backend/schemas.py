@@ -2,6 +2,10 @@ from pydantic import BaseModel, EmailStr, validator, Field
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
+from input_sanitizer import (
+    username_validator, email_validator, password_validator, 
+    role_name_validator, sanitize_string_validator
+)
 
 # Person schemas
 class PersonRole(str, Enum):
@@ -17,20 +21,18 @@ class PersonBase(BaseModel):
 
     @validator('username')
     def username_must_be_valid(cls, v):
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Username must be less than 50 characters')
-        return v
+        return username_validator(cls, v)
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        return email_validator(cls, v)
 
 class PersonCreate(PersonBase):
     password: str
 
     @validator('password')
     def password_must_be_strong(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
-        return v
+        return password_validator(cls, v)
 
 class PersonCreateWithAutoPassword(BaseModel):
     username: str
@@ -39,11 +41,11 @@ class PersonCreateWithAutoPassword(BaseModel):
 
     @validator('username')
     def username_must_be_valid(cls, v):
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Username must be less than 50 characters')
-        return v
+        return username_validator(cls, v)
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        return email_validator(cls, v)
 
 class PersonResponse(PersonBase):
     id: str
@@ -67,10 +69,13 @@ class PersonUpdate(BaseModel):
     @validator('username')
     def username_must_be_valid(cls, v):
         if v is not None:
-            if len(v) < 3:
-                raise ValueError('Username must be at least 3 characters long')
-            if len(v) > 50:
-                raise ValueError('Username must be less than 50 characters')
+            return username_validator(cls, v)
+        return v
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        if v is not None:
+            return email_validator(cls, v)
         return v
 
 # User schemas
@@ -80,11 +85,11 @@ class UserBase(BaseModel):
 
     @validator('username')
     def username_must_be_valid(cls, v):
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Username must be less than 50 characters')
-        return v
+        return username_validator(cls, v)
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        return email_validator(cls, v)
 
 class UserCreate(UserBase):
     password: str
@@ -92,9 +97,7 @@ class UserCreate(UserBase):
 
     @validator('password')
     def password_must_be_strong(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
-        return v
+        return password_validator(cls, v)
 
 class UserCreateWithAutoPassword(BaseModel):
     username: str
@@ -103,11 +106,11 @@ class UserCreateWithAutoPassword(BaseModel):
 
     @validator('username')
     def username_must_be_valid(cls, v):
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Username must be less than 50 characters')
-        return v
+        return username_validator(cls, v)
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        return email_validator(cls, v)
 
 class UserResponse(UserBase):
     id: int
@@ -133,10 +136,13 @@ class UserUpdate(BaseModel):
     @validator('username')
     def username_must_be_valid(cls, v):
         if v is not None:
-            if len(v) < 3:
-                raise ValueError('Username must be at least 3 characters long')
-            if len(v) > 50:
-                raise ValueError('Username must be less than 50 characters')
+            return username_validator(cls, v)
+        return v
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        if v is not None:
+            return email_validator(cls, v)
         return v
 
 # Authentication schemas
@@ -157,17 +163,15 @@ class RegisterRequest(BaseModel):
 
     @validator('username')
     def username_must_be_valid(cls, v):
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Username must be less than 50 characters')
-        return v
+        return username_validator(cls, v)
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        return email_validator(cls, v)
 
     @validator('password')
     def password_must_be_strong(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
-        return v
+        return password_validator(cls, v)
 
     @validator('confirm_password')
     def passwords_must_match(cls, v, values):
@@ -186,10 +190,12 @@ class RoleBase(BaseModel):
 
     @validator('name')
     def name_must_be_valid(cls, v):
-        if len(v) < 2:
-            raise ValueError('Role name must be at least 2 characters long')
-        if len(v) > 50:
-            raise ValueError('Role name must be less than 50 characters')
+        return role_name_validator(cls, v)
+    
+    @validator('description')
+    def description_must_be_valid(cls, v):
+        if v is not None:
+            return sanitize_string_validator(500)(cls, v)
         return v
 
 class RoleCreate(RoleBase):
@@ -203,10 +209,13 @@ class RoleUpdate(BaseModel):
     @validator('name')
     def name_must_be_valid(cls, v):
         if v is not None:
-            if len(v) < 2:
-                raise ValueError('Role name must be at least 2 characters long')
-            if len(v) > 50:
-                raise ValueError('Role name must be less than 50 characters')
+            return role_name_validator(cls, v)
+        return v
+    
+    @validator('description')
+    def description_must_be_valid(cls, v):
+        if v is not None:
+            return sanitize_string_validator(500)(cls, v)
         return v
 
 class RoleResponse(RoleBase):
@@ -224,10 +233,12 @@ class PermissionBase(BaseModel):
 
     @validator('name')
     def name_must_be_valid(cls, v):
-        if len(v) < 2:
-            raise ValueError('Permission name must be at least 2 characters long')
-        if len(v) > 100:
-            raise ValueError('Permission name must be less than 100 characters')
+        return sanitize_string_validator(100)(cls, v)
+    
+    @validator('description')
+    def description_must_be_valid(cls, v):
+        if v is not None:
+            return sanitize_string_validator(500)(cls, v)
         return v
 
 class PermissionCreate(PermissionBase):
@@ -240,10 +251,13 @@ class PermissionUpdate(BaseModel):
     @validator('name')
     def name_must_be_valid(cls, v):
         if v is not None:
-            if len(v) < 2:
-                raise ValueError('Permission name must be at least 2 characters long')
-            if len(v) > 100:
-                raise ValueError('Permission name must be less than 100 characters')
+            return sanitize_string_validator(100)(cls, v)
+        return v
+    
+    @validator('description')
+    def description_must_be_valid(cls, v):
+        if v is not None:
+            return sanitize_string_validator(500)(cls, v)
         return v
 
 class PermissionResponse(PermissionBase):

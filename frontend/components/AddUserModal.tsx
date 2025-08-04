@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { X, User, Mail, Lock, Shield } from 'lucide-react';
+import { InputValidator } from '@/lib/inputValidator';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -14,12 +15,21 @@ interface AddUserModalProps {
 }
 
 const userSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().refine((val) => {
+    const result = InputValidator.validateUsername(val);
+    return result.isValid;
+  }, 'Username must be 3-50 characters, alphanumeric, underscore, or dash only'),
+  email: z.string().refine((val) => {
+    const result = InputValidator.validateEmail(val);
+    return result.isValid;
+  }, 'Invalid email address'),
+  password: z.string().refine((val) => {
+    const result = InputValidator.validatePassword(val);
+    return result.isValid;
+  }, 'Password must be at least 8 characters with uppercase, lowercase, and number'),
   confirm_password: z.string(),
   role: z.string().min(1, 'Role is required'),
-  full_name: z.string().optional()
+  full_name: z.string().optional().transform((val) => val ? InputValidator.sanitizeString(val, 100) : val)
 }).refine((data) => data.password === data.confirm_password, {
   message: "Passwords don't match",
   path: ["confirm_password"],
@@ -42,13 +52,16 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
     setError('');
 
     try {
+      // Sanitize all form data before sending
+      const sanitizedData = InputValidator.sanitizeFormData(data);
+      
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify(sanitizedData),
       });
 
       if (response.ok) {

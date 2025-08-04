@@ -29,15 +29,28 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
     
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
 
-def verify_token(token: str) -> Optional[str]:
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days)
+    
+    to_encode.update({"exp": expire, "type": "refresh"})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return encoded_jwt
+
+def verify_token(token: str, token_type: str = "access") -> Optional[str]:
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
-        if username is None:
+        token_type_claim: str = payload.get("type")
+        
+        if username is None or token_type_claim != token_type:
             return None
         return username
     except JWTError:
@@ -66,7 +79,9 @@ def get_current_user(
         # Validate JWT using secret key from environment variables
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
-        if username is None:
+        token_type: str = payload.get("type")
+        
+        if username is None or token_type != "access":
             raise credentials_exception
     except JWTError:
         raise credentials_exception
@@ -93,7 +108,7 @@ def get_current_user_from_header(
     )
     
     try:
-        username = verify_token(credentials.credentials)
+        username = verify_token(credentials.credentials, "access")
         if username is None:
             raise credentials_exception
     except JWTError:
@@ -119,7 +134,7 @@ def get_current_user_fallback(
     if token:
         # Use cookie-based authentication
         try:
-            username = verify_token(token)
+            username = verify_token(token, "access")
             if username:
                 user = db.query(User).filter(User.username == username).first()
                 if user:
@@ -132,7 +147,7 @@ def get_current_user_fallback(
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
-            username = verify_token(token)
+            username = verify_token(token, "access")
             if username:
                 user = db.query(User).filter(User.username == username).first()
                 if user:
