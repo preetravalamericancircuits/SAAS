@@ -26,9 +26,10 @@ export default function Navigation() {
         ...baseItems,
         { name: 'User Management', href: '/dashboard', current: router.pathname === '/dashboard' },
         { name: 'Secure Files', href: '/secure-files', current: router.pathname === '/secure-files' },
-        { name: 'Roles & Permissions', href: '#', current: false },
-        { name: 'System Settings', href: '#', current: false },
-        { name: 'Audit Logs', href: '#', current: false }
+        { name: 'Roles & Permissions', href: '/roles', current: router.pathname === '/roles' },
+        { name: 'System Settings', href: '/settings', current: router.pathname === '/settings' },
+        { name: 'Audit Logs', href: '/audit', current: router.pathname === '/audit' },
+        { name: 'Internal Links', href: '/internal', current: router.pathname === '/internal' }
       ];
     }
 

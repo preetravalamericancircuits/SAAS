@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
+import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { 
   DocumentIcon, 
@@ -60,14 +60,11 @@ export default function SecureFilesPage() {
   if (isLoading) {
     return (
       <ProtectedRoute requiredRoles={['ITRA', 'SuperUser']}>
-        <div className="min-h-screen bg-gray-50">
-          <Navigation />
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-          </main>
-        </div>
+        <Layout>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </Layout>
       </ProtectedRoute>
     );
   }
@@ -75,30 +72,26 @@ export default function SecureFilesPage() {
   if (error) {
     return (
       <ProtectedRoute requiredRoles={['ITRA', 'SuperUser']}>
-        <div className="min-h-screen bg-gray-50">
-          <Navigation />
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error loading secure files</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    Failed to load secure files. You may not have the required permissions.
-                  </div>
+        <Layout>
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error loading secure files</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  Failed to load secure files. You may not have the required permissions.
                 </div>
               </div>
             </div>
-          </main>
-        </div>
+          </div>
+        </Layout>
       </ProtectedRoute>
     );
   }
 
   return (
     <ProtectedRoute requiredRoles={['ITRA', 'SuperUser']}>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <Layout>
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -251,8 +244,8 @@ export default function SecureFilesPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </Layout>
     </ProtectedRoute>
   );
 } 

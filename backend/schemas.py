@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator, Field
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
@@ -12,7 +12,7 @@ class PersonRole(str, Enum):
 
 class PersonBase(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     role: PersonRole
 
     @validator('username')
@@ -34,7 +34,7 @@ class PersonCreate(PersonBase):
 
 class PersonUpdate(BaseModel):
     username: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     role: Optional[PersonRole] = None
     is_active: Optional[bool] = None
 
@@ -58,7 +58,7 @@ class PersonResponse(PersonBase):
 # User schemas
 class UserBase(BaseModel):
     username: str
-    email: EmailStr
+    email: str
 
     @validator('username')
     def username_must_be_valid(cls, v):
@@ -80,7 +80,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     role_id: Optional[int] = None
     is_active: Optional[bool] = None
 
@@ -115,7 +115,7 @@ class LoginResponse(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     password: str
     confirm_password: str
 

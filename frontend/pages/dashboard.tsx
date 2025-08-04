@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
-import Navigation from '@/components/Navigation';
+import Layout from '@/components/Layout';
 import Dashboard from '@/components/Dashboard';
 import UserManagement from '@/components/UserManagement';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -23,9 +23,8 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <Layout>
+        <div className="max-w-7xl mx-auto">
           {/* Error Message */}
           {showError && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
@@ -60,8 +59,8 @@ export default function DashboardPage() {
           ) : (
             <Dashboard />
           )}
-        </main>
-      </div>
+        </div>
+      </Layout>
     </ProtectedRoute>
   );
 } 

@@ -20,18 +20,18 @@ export default function Dashboard() {
           title: 'System Administration Dashboard',
           description: 'Full system control and monitoring',
           stats: [
-            { name: 'Total Users', value: '156', icon: UserIcon, color: 'bg-blue-500' },
-            { name: 'Active Sessions', value: '23', icon: ShieldCheckIcon, color: 'bg-green-500' },
-            { name: 'System Health', value: '98%', icon: CheckCircleIcon, color: 'bg-green-500' },
-            { name: 'Pending Tasks', value: '7', icon: ClockIcon, color: 'bg-yellow-500' }
+            { name: 'Total Users', value: '11', icon: UserIcon, color: 'bg-blue-500' },
+            { name: 'Active Sessions', value: '5', icon: ShieldCheckIcon, color: 'bg-green-500' },
+            { name: 'System Health', value: '100%', icon: CheckCircleIcon, color: 'bg-green-500' },
+            { name: 'Docker Services', value: '13', icon: CogIcon, color: 'bg-purple-500' }
           ],
           features: [
             'User Management & Role Assignment',
-            'System Configuration',
+            'System Configuration & Settings',
             'Audit Logs & Security Monitoring',
-            'Database Administration',
-            'API Management',
-            'Performance Analytics'
+            'Database Administration (Adminer)',
+            'Container Management (Portainer)',
+            'Performance Analytics (Grafana)'
           ]
         };
       
