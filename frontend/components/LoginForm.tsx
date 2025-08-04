@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
-import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -42,14 +41,9 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-2xl border-0 bg-white backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
+        <Card className="shadow-2xl border-0 bg-card backdrop-blur-sm">
           <CardContent className="p-8">
             <div className="text-center mb-8">
               <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mb-4">
@@ -135,13 +129,9 @@ export default function LoginForm() {
               </div>
 
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-red-50 border border-red-200 rounded-lg p-3"
-                >
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 animate-fade-in">
                   <p className="text-sm text-red-800">{error}</p>
-                </motion.div>
+                </div>
               )}
 
               <Button
@@ -158,23 +148,22 @@ export default function LoginForm() {
                   'Sign In'
                 )}
               </Button>
-
+              
               <div className="text-center pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500 mb-2">
                   Demo Accounts:
                 </p>
                 <div className="text-xs text-gray-500 space-y-1">
-                  <p><strong>SuperUser:</strong> preet / password123</p>
-                  <p><strong>Admin:</strong> admin / admin123</p>
-                  <p><strong>ITRA:</strong> itra1 / password123</p>
-                  <p><strong>Operator:</strong> operator1 / password123</p>
-                  <p><strong>User:</strong> user1 / password123</p>
+                  <p><strong>SuperUsers:</strong> preet, kanav, khash, tony</p>
+                  <p><strong>Users:</strong> pratiksha, cathy</p>
+                  <p><strong>Operators:</strong> kris, abhishek</p>
+                  <p><strong>Password:</strong> password123 (all users)</p>
                 </div>
               </div>
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
-} 
+}

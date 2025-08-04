@@ -1,10 +1,41 @@
+import { useState } from 'react';
 import { UsersIcon, UserPlusIcon, ShieldCheckIcon, EyeIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge } from '@/components/ui/modern-components';
+import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge, ModernInput } from '@/components/ui/modern-components';
 
 export default function Users() {
+  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'User' });
+  
   const handleButtonClick = (action: string) => {
-    console.log(`User Management action: ${action}`);
-    alert(`${action} clicked!`);
+    switch(action) {
+      case 'Add User':
+        setShowAddUserForm(true);
+        break;
+      case 'Save User':
+        if (newUser.name && newUser.email) {
+          alert(`User ${newUser.name} added successfully!`);
+          setNewUser({ name: '', email: '', role: 'User' });
+          setShowAddUserForm(false);
+        } else {
+          alert('Please fill all fields');
+        }
+        break;
+      case 'Cancel':
+        setShowAddUserForm(false);
+        setNewUser({ name: '', email: '', role: 'User' });
+        break;
+      case 'Export Users':
+        const userData = recentUsers.map(u => `${u.name},${u.email},${u.role},${u.status}`).join('\n');
+        const blob = new Blob([`Name,Email,Role,Status\n${userData}`], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        break;
+      default:
+        alert(`${action} executed!`);
+    }
   };
 
   const userStats = [
@@ -123,6 +154,51 @@ export default function Users() {
           ))}
         </div>
       </ModernCard>
+      
+      {/* Add User Form Modal */}
+      {showAddUserForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <ModernCard className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New User</h3>
+            <div className="space-y-4">
+              <ModernInput
+                label="Full Name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                placeholder="Enter full name"
+              />
+              <ModernInput
+                label="Email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                placeholder="Enter email address"
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="User">User</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                  <option value="SuperUser">SuperUser</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <ModernButton onClick={() => handleButtonClick('Save User')} className="flex-1">
+                Save User
+              </ModernButton>
+              <ModernButton variant="outline" onClick={() => handleButtonClick('Cancel')} className="flex-1">
+                Cancel
+              </ModernButton>
+            </div>
+          </ModernCard>
+        </div>
+      )}
     </div>
   );
 }

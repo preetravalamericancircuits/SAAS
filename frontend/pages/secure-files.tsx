@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+
 import { 
   DocumentIcon, 
   ArrowDownTrayIcon, 
@@ -62,7 +63,7 @@ export default function SecureFilesPage() {
       <ProtectedRoute requiredRoles={['ITRA', 'SuperUser']}>
         <Layout>
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         </Layout>
       </ProtectedRoute>
@@ -92,26 +93,29 @@ export default function SecureFilesPage() {
     <ProtectedRoute requiredRoles={['ITRA', 'SuperUser']}>
       <Layout>
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Header */} 
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <ShieldCheckIcon className="h-8 w-8 text-green-600 mr-3" />
-                  Secure Files
-                </h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Confidential documents and internal audit files
-                </p>
+              <div className="flex items-center space-x-4">
+
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground flex items-center">
+                    <ShieldCheckIcon className="h-8 w-8 text-accent mr-3" />
+                    Secure Files
+                  </h1>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Confidential documents and internal audit files
+                  </p>
+                </div>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Access granted by</p>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm text-muted-foreground">Access granted by</p>
+                  <p className="text-sm font-medium text-foreground">
                     {secureFilesData?.access_granted_by}
                   </p>
                 </div>
-                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                <div className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
                   {secureFilesData?.role}
                 </div>
               </div>
@@ -119,17 +123,17 @@ export default function SecureFilesPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+            <div className="bg-card overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <DocumentIcon className="h-6 w-6 text-gray-400" />
+                    <DocumentIcon className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total Files</dt>
-                      <dd className="text-lg font-medium text-gray-900">
+                      <dt className="text-sm font-medium text-muted-foreground truncate">Total Files</dt>
+                      <dd className="text-lg font-medium text-foreground">
                         {secureFilesData?.total_count || 0}
                       </dd>
                     </dl>
@@ -137,31 +141,31 @@ export default function SecureFilesPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-card overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <ShieldCheckIcon className="h-6 w-6 text-green-400" />
+                    <ShieldCheckIcon className="h-6 w-6 text-accent" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Access Level</dt>
-                      <dd className="text-lg font-medium text-gray-900">Secure</dd>
+                      <dt className="text-sm font-medium text-muted-foreground truncate">Access Level</dt>
+                      <dd className="text-lg font-medium text-foreground">Secure</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-card overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <UserIcon className="h-6 w-6 text-blue-400" />
+                    <UserIcon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Your Role</dt>
-                      <dd className="text-lg font-medium text-gray-900">{user?.role}</dd>
+                      <dt className="text-sm font-medium text-muted-foreground truncate">Your Role</dt>
+                      <dd className="text-lg font-medium text-foreground">{user?.role}</dd>
                     </dl>
                   </div>
                 </div>
@@ -170,34 +174,34 @@ export default function SecureFilesPage() {
           </div>
 
           {/* Files List */}
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <div className="bg-card shadow overflow-hidden sm:rounded-md animate-fade-in">
+            <div className="px-4 py-5 sm:px-6 border-b border-border">
+              <h3 className="text-lg leading-6 font-medium text-foreground">
                 Confidential Documents
               </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
                 Internal audit reports and security assessments
               </p>
             </div>
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-border">
               {secureFilesData?.files.map((file) => (
                 <li key={file.id}>
                   <div className="px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <DocumentIcon className="h-8 w-8 text-gray-400" />
+                          <DocumentIcon className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <div className="ml-4">
                           <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-foreground">
                               {file.name}
                             </p>
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent text-accent-foreground">
                               Secure
                             </span>
                           </div>
-                          <div className="flex items-center mt-1 space-x-4 text-sm text-gray-500">
+                          <div className="flex items-center mt-1 space-x-4 text-sm text-muted-foreground">
                             <div className="flex items-center">
                               <ClockIcon className="h-4 w-4 mr-1" />
                               {formatDate(file.uploaded_at)}
@@ -211,11 +215,11 @@ export default function SecureFilesPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <button className="inline-flex items-center px-3 py-1 border border-border shadow-sm text-sm leading-4 font-medium rounded-md text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
                           <EyeIcon className="h-4 w-4 mr-1" />
                           Preview
                         </button>
-                        <button className="inline-flex items-center px-3 py-1 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <button className="inline-flex items-center px-3 py-1 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-background bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring">
                           <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
                           Download
                         </button>
@@ -227,22 +231,22 @@ export default function SecureFilesPage() {
             </ul>
           </div>
 
-          <Card className="mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-4">
+          <div className="mt-8 bg-accent/20 border-accent rounded-lg border p-4">
+            <div className="p-4">
               <div className="flex">
-                <ShieldCheckIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <ShieldCheckIcon className="h-5 w-5 text-accent flex-shrink-0" />
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Security Notice</h3>
-                  <p className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                  <h3 className="text-sm font-medium text-accent-foreground">Security Notice</h3>
+                  <p className="mt-2 text-sm text-accent-foreground/80">
                     These files contain confidential information. Please ensure you have proper authorization 
                     before accessing or downloading any documents. All access is logged and monitored.
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </PageContainer>
+            </div>
+          </div>
+        </div>
       </Layout>
     </ProtectedRoute>
   );
-} 
+}

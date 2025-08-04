@@ -38,6 +38,7 @@ def create_roles(db: Session):
 def create_users(db: Session):
     """Create initial users in the users table"""
     users_data = [
+        # SuperUsers
         {
             "username": "preet",
             "email": "preet@aci.local",
@@ -45,6 +46,58 @@ def create_users(db: Session):
             "role_name": "SuperUser",
             "is_active": True
         },
+        {
+            "username": "kanav",
+            "email": "kanav@aci.local",
+            "password": "password123",
+            "role_name": "SuperUser",
+            "is_active": True
+        },
+        {
+            "username": "khash",
+            "email": "khash@aci.local",
+            "password": "password123",
+            "role_name": "SuperUser",
+            "is_active": True
+        },
+        {
+            "username": "tony",
+            "email": "tony@aci.local",
+            "password": "password123",
+            "role_name": "SuperUser",
+            "is_active": True
+        },
+        # Users
+        {
+            "username": "pratiksha",
+            "email": "pratiksha@aci.local",
+            "password": "password123",
+            "role_name": "User",
+            "is_active": True
+        },
+        {
+            "username": "cathy",
+            "email": "cathy@aci.local",
+            "password": "password123",
+            "role_name": "User",
+            "is_active": True
+        },
+        # Operators
+        {
+            "username": "kris",
+            "email": "kris@aci.local",
+            "password": "password123",
+            "role_name": "Operator",
+            "is_active": True
+        },
+        {
+            "username": "abhishek",
+            "email": "abhishek@aci.local",
+            "password": "password123",
+            "role_name": "Operator",
+            "is_active": True
+        },
+        # Legacy users
         {
             "username": "operator1",
             "email": "operator1@aci.local",
@@ -190,10 +243,10 @@ def main():
         
         print("\n✅ User seeding completed successfully!")
         print("\nDefault credentials:")
-        print("SuperUser: preet / password123")
-        print("Operator: operator1 / password123")
-        print("User: user1 / password123")
-        print("ITRA: itra1 / password123")
+        print("SuperUsers: preet, kanav, khash, tony / password123")
+        print("Users: pratiksha, cathy / password123")
+        print("Operators: kris, abhishek / password123")
+        print("Legacy: operator1, user1, itra1 / password123")
         print("Admin: admin / admin123")
         
     except Exception as e:

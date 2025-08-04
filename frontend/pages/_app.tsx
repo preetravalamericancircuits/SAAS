@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { useRouter } from 'next/router';
 import NewLayout from '@/components/NewLayout';
 
 const queryClient = new QueryClient({
@@ -13,13 +14,26 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function App({ Component, pageProps }: AppProps) {
+function AppContent({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const isLoginPage = router.pathname === '/login' || router.pathname === '/';
+  
+  if (isLoginPage) {
+    return <Component {...pageProps} />;
+  }
+  
+  return (
+    <NewLayout>
+      <Component {...pageProps} />
+    </NewLayout>
+  );
+}
+
+export default function App(props: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NewLayout>
-          <Component {...pageProps} />
-        </NewLayout>
+        <AppContent {...props} />
       </AuthProvider>
     </QueryClientProvider>
   );

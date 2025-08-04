@@ -9,7 +9,7 @@ interface CardProps {
 
 export function ModernCard({ children, className = '', hover = true }: CardProps) {
   return (
-    <div className={`bg-white rounded-xl shadow-md border border-gray-100 ${hover ? 'hover:shadow-lg hover:border-primary-200 transition-all duration-200' : ''} ${className}`}>
+    <div className={`bg-white rounded-xl shadow-md border border-gray-100 ${hover ? 'hover:shadow-lg hover:border-blue-200 transition-all duration-200' : ''} ${className}`}>
       {children}
     </div>
   );
@@ -36,10 +36,10 @@ export function ModernButton({
   const baseClasses = 'font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-md hover:shadow-lg',
-    secondary: 'bg-primary-100 text-primary-700 hover:bg-primary-200 focus:ring-primary-500',
-    outline: 'border border-primary-300 text-primary-700 hover:bg-primary-50 focus:ring-primary-500',
-    ghost: 'text-primary-600 hover:bg-primary-50 focus:ring-primary-500'
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-md hover:shadow-lg',
+    secondary: 'bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500',
+    outline: 'border border-blue-300 text-blue-700 hover:bg-blue-50 focus:ring-blue-500',
+    ghost: 'text-blue-600 hover:bg-blue-50 focus:ring-blue-500'
   };
   
   const sizes = {
@@ -68,7 +68,7 @@ interface BadgeProps {
 
 export function ModernBadge({ children, variant = 'primary', size = 'sm' }: BadgeProps) {
   const variants = {
-    primary: 'bg-primary-100 text-primary-800',
+    primary: 'bg-blue-100 text-blue-800',
     success: 'bg-green-100 text-green-800',
     warning: 'bg-yellow-100 text-yellow-800',
     error: 'bg-red-100 text-red-800',
@@ -119,7 +119,7 @@ export function ModernInput({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
           error ? 'border-red-300' : 'border-gray-300'
         }`}
       />

@@ -9,14 +9,18 @@ import {
   UsersIcon,
   BeakerIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
+
+import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Simulations', href: '/simulations', icon: BeakerIcon },
   { name: 'Reports', href: '/reports', icon: DocumentChartBarIcon },
+  { name: 'Tools', href: '/tools', icon: WrenchScrewdriverIcon },
   { name: 'User Management', href: '/users', icon: UsersIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
@@ -30,7 +34,7 @@ export default function NewSidebar() {
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-gradient-to-b from-primary-900 to-primary-800 shadow-xl">
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-gradient-to-b from-blue-900 to-blue-800 shadow-xl">
           <div className="flex h-16 items-center justify-between px-4">
             <h1 className="text-xl font-bold text-white">SAAS Platform</h1>
             <button onClick={() => setSidebarOpen(false)} className="text-white">
@@ -44,8 +48,8 @@ export default function NewSidebar() {
                 href={item.href}
                 className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                   router.pathname === item.href
-                    ? 'bg-primary-600 text-white shadow-lg'
-                    : 'text-blue-100 hover:bg-primary-700 hover:text-white'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-blue-100 hover:bg-blue-700 hover:text-white'
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -59,7 +63,7 @@ export default function NewSidebar() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-gradient-to-b from-primary-900 to-primary-800 pt-5 pb-4 overflow-y-auto shadow-xl">
+        <div className="flex flex-col flex-grow bg-gradient-to-b from-blue-900 to-blue-800 pt-5 pb-4 overflow-y-auto shadow-xl">
           <div className="flex items-center flex-shrink-0 px-4">
             <h1 className="text-xl font-bold text-white">SAAS Platform</h1>
           </div>
@@ -71,8 +75,8 @@ export default function NewSidebar() {
                   href={item.href}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                     router.pathname === item.href
-                      ? 'bg-primary-600 text-white shadow-lg border-l-4 border-blue-300'
-                      : 'text-blue-100 hover:bg-primary-700 hover:text-white transition-all duration-200'
+                      ? 'bg-blue-600 text-white shadow-lg border-l-4 border-blue-300'
+                      : 'text-blue-100 hover:bg-blue-700 hover:text-white transition-all duration-200'
                   }`}
                 >
                   <item.icon className="mr-3 h-6 w-6" />
@@ -88,7 +92,7 @@ export default function NewSidebar() {
       <div className="lg:hidden">
         <button
           onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-40 bg-primary-800 text-white p-2 rounded-md shadow-lg hover:bg-primary-700 transition-colors"
+          className="fixed top-4 left-4 z-40 bg-blue-800 text-white p-2 rounded-md shadow-lg hover:bg-blue-700 transition-colors"
         >
           <Bars3Icon className="h-6 w-6" />
         </button>

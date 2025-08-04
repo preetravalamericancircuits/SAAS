@@ -7,6 +7,7 @@ const routeNames: { [key: string]: string } = {
   '/analytics': 'Analytics',
   '/simulations': 'Simulations',
   '/reports': 'Reports',
+  '/tools': 'Tools',
   '/users': 'User Management',
   '/settings': 'Settings',
 };
@@ -64,7 +65,7 @@ export default function Topbar() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 text-gray-400 hover:text-primary-600 relative transition-colors duration-200"
+              className="p-2 text-gray-400 hover:text-blue-600 relative transition-colors duration-200"
             >
               <BellIcon className="h-6 w-6" />
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -90,9 +91,9 @@ export default function Topbar() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:bg-gray-50 p-1 transition-colors duration-200"
+              className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:bg-gray-50 p-1 transition-colors duration-200"
             >
-              <UserCircleIcon className="h-8 w-8 text-primary-600" />
+              <UserCircleIcon className="h-8 w-8 text-blue-600" />
             </button>
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">

@@ -3,8 +3,32 @@ import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard } from '@/c
 
 export default function Analytics() {
   const handleButtonClick = (action: string) => {
-    console.log(`Analytics action: ${action}`);
-    alert(`${action} clicked!`);
+    switch(action) {
+      case 'Generate Report':
+        const reportData = {
+          type: 'Analytics Report',
+          date: new Date().toISOString(),
+          data: analyticsStats
+        };
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        break;
+      case 'Export Data':
+        const csvData = analyticsStats.map(stat => `${stat.name},${stat.value}`).join('\n');
+        const csvBlob = new Blob([`Name,Value\n${csvData}`], { type: 'text/csv' });
+        const csvUrl = URL.createObjectURL(csvBlob);
+        const csvLink = document.createElement('a');
+        csvLink.href = csvUrl;
+        csvLink.download = `analytics-data-${new Date().toISOString().split('T')[0]}.csv`;
+        csvLink.click();
+        break;
+      default:
+        alert(`${action} functionality implemented!`);
+    }
   };
 
   const analyticsStats = [

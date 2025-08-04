@@ -17,14 +17,14 @@ export default function Dashboard() {
       name: 'Total Simulations', 
       value: '1,234', 
       icon: ChartBarIcon, 
-      color: 'bg-primary-600',
+      color: 'bg-blue-600',
       trend: { value: '+12%', isPositive: true }
     },
     { 
       name: 'Active Users', 
       value: '89', 
       icon: UsersIcon, 
-      color: 'bg-primary-500',
+      color: 'bg-blue-500',
       trend: { value: '+5%', isPositive: true }
     },
     { 
@@ -71,7 +71,7 @@ export default function Dashboard() {
           <select
             value={selectedUrl}
             onChange={(e) => setSelectedUrl(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
           >
             {urls.map((url) => (
               <option key={url.url} value={url.url}>
