@@ -13,8 +13,9 @@ from schemas import (
     UserCreate, UserResponse, LoginRequest, LoginResponse, PersonCreate, PersonResponse, PersonUpdate,
     RegisterRequest, RegisterResponse, UserUpdate, UserRoleUpdate, UserPromoteRequest, UserPromoteResponse,
     RoleCreate, RoleResponse, RoleUpdate, PermissionCreate, PermissionResponse, PermissionUpdate,
-    MessageResponse
+    MessageResponse, UserCreateWithAutoPassword, UserCreateResponse, PersonCreateWithAutoPassword, PersonCreateResponse
 )
+from password_utils import generate_secure_password
 from auth import (
     create_access_token, get_current_user, verify_password, get_password_hash,
     requires_role, requires_permission, requires_any_role, is_admin, get_user_permissions
@@ -249,7 +250,7 @@ async def create_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(requires_permission("user:create"))
 ):
-    """Create a new user (requires user:create permission)"""
+    """Create a new user with manual password (requires user:create permission)"""
     # Check if user already exists
     existing_user = db.query(User).filter(User.username == user_data.username).first()
     if existing_user:
@@ -286,6 +287,61 @@ async def create_user(
         permissions=get_user_permissions(db_user),
         is_active=db_user.is_active,
         created_at=db_user.created_at
+    )
+
+@app.post("/api/users/auto-password", response_model=UserCreateResponse)
+async def create_user_with_auto_password(
+    user_data: UserCreateWithAutoPassword,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(requires_permission("user:create"))
+):
+    """Create a new user with auto-generated secure password (requires user:create permission)"""
+    # Check if user already exists
+    existing_user = db.query(User).filter(User.username == user_data.username).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+    
+    existing_email = db.query(User).filter(User.email == user_data.email).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Generate secure password
+    raw_password = generate_secure_password(12)
+    hashed_password = get_password_hash(raw_password)
+    
+    # Create new user
+    db_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        role_id=user_data.role_id
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    # Log password creation for security audit
+    print(f"[SECURITY AUDIT] User created with auto-generated password. Username: {user_data.username}, Email: {user_data.email}, Created by: {current_user.username}")
+    
+    return UserCreateResponse(
+        message=f"User {user_data.username} created successfully with auto-generated password",
+        user=UserResponse(
+            id=db_user.id,
+            username=db_user.username,
+            email=db_user.email,
+            role=db_user.role.name if db_user.role else None,
+            permissions=get_user_permissions(db_user),
+            is_active=db_user.is_active,
+            created_at=db_user.created_at
+        ),
+        generated_password=raw_password  # Only returned once for security
     )
 
 @app.put("/api/users/{user_id}", response_model=UserResponse)
@@ -529,7 +585,7 @@ async def create_person(
     db: Session = Depends(get_db),
     current_user: User = Depends(requires_permission("person:create"))
 ):
-    """Create a new person (requires person:create permission)"""
+    """Create a new person with manual password (requires person:create permission)"""
     # Check if person already exists
     existing_person = db.query(Person).filter(Person.username == person_data.username).first()
     if existing_person:
@@ -558,6 +614,60 @@ async def create_person(
         role=db_person.role.value,
         is_active=db_person.is_active,
         created_at=db_person.created_at
+    )
+
+@app.post("/api/persons/auto-password", response_model=PersonCreateResponse)
+async def create_person_with_auto_password(
+    person_data: PersonCreateWithAutoPassword,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(requires_permission("person:create"))
+):
+    """Create a new person with auto-generated secure password (requires person:create permission)"""
+    # Check if person already exists
+    existing_person = db.query(Person).filter(Person.username == person_data.username).first()
+    if existing_person:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+    
+    existing_email = db.query(Person).filter(Person.email == person_data.email).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Generate secure password
+    raw_password = generate_secure_password(12)
+    hashed_password = get_password_hash(raw_password)
+    
+    # Create new person
+    db_person = Person(
+        username=person_data.username,
+        email=person_data.email,
+        hashed_password=hashed_password,
+        role=person_data.role
+    )
+    
+    db.add(db_person)
+    db.commit()
+    db.refresh(db_person)
+    
+    # Log password creation for security audit
+    print(f"[SECURITY AUDIT] Person created with auto-generated password. Username: {person_data.username}, Email: {person_data.email}, Role: {person_data.role.value}, Created by: {current_user.username}")
+    
+    return PersonCreateResponse(
+        message=f"Person {person_data.username} created successfully with auto-generated password",
+        person=PersonResponse(
+            id=str(db_person.id),
+            username=db_person.username,
+            email=db_person.email,
+            role=db_person.role.value,
+            is_active=db_person.is_active,
+            created_at=db_person.created_at
+        ),
+        generated_password=raw_password  # Only returned once for security
     )
 
 @app.get("/api/persons", response_model=List[PersonResponse])

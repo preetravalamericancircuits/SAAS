@@ -32,6 +32,24 @@ class PersonCreate(PersonBase):
             raise ValueError('Password must be at least 8 characters long')
         return v
 
+class PersonCreateWithAutoPassword(BaseModel):
+    username: str
+    email: str
+    role: PersonRole
+
+    @validator('username')
+    def username_must_be_valid(cls, v):
+        if len(v) < 3:
+            raise ValueError('Username must be at least 3 characters long')
+        if len(v) > 50:
+            raise ValueError('Username must be less than 50 characters')
+        return v
+
+class PersonCreateResponse(BaseModel):
+    message: str
+    person: PersonResponse
+    generated_password: str  # Only shown once for security
+
 class PersonUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
@@ -77,6 +95,24 @@ class UserCreate(UserBase):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         return v
+
+class UserCreateWithAutoPassword(BaseModel):
+    username: str
+    email: str
+    role_id: Optional[int] = None
+
+    @validator('username')
+    def username_must_be_valid(cls, v):
+        if len(v) < 3:
+            raise ValueError('Username must be at least 3 characters long')
+        if len(v) > 50:
+            raise ValueError('Username must be less than 50 characters')
+        return v
+
+class UserCreateResponse(BaseModel):
+    message: str
+    user: UserResponse
+    generated_password: str  # Only shown once for security
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
