@@ -1,4 +1,4 @@
-import { BeakerIcon, PlayIcon, DocumentArrowDownIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Flask, Play, Download, Clock } from 'lucide-react';
 import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge } from '@/components/ui/modern-components';
 
 export default function Simulations() {
@@ -8,10 +8,10 @@ export default function Simulations() {
   };
 
   const simulationStats = [
-    { name: 'Running Simulations', value: '8', icon: PlayIcon, color: 'bg-green-600' },
-    { name: 'Completed Today', value: '24', icon: BeakerIcon, color: 'bg-blue-600' },
-    { name: 'Queue Length', value: '3', icon: ClockIcon, color: 'bg-yellow-600' },
-    { name: 'Success Rate', value: '96.8%', icon: DocumentArrowDownIcon, color: 'bg-purple-600' }
+    { name: 'Running Simulations', value: '8', icon: Play, color: 'bg-green-600' },
+    { name: 'Completed Today', value: '24', icon: Flask, color: 'bg-blue-600' },
+    { name: 'Queue Length', value: '3', icon: Clock, color: 'bg-yellow-600' },
+    { name: 'Success Rate', value: '96.8%', icon: Download, color: 'bg-purple-600' }
   ];
 
   const recentSimulations = [
@@ -32,7 +32,7 @@ export default function Simulations() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       <ModernPageHeader 
         title="Simulations" 
         description="Advanced simulation management system for load testing, performance analysis, and system validation"
@@ -114,7 +114,7 @@ export default function Simulations() {
           {recentSimulations.map((sim) => (
             <div key={sim.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-4">
-                <BeakerIcon className="h-8 w-8 text-primary-600" />
+                <Flask className="h-8 w-8 text-primary-600" />
                 <div>
                   <h3 className="font-medium text-gray-900">{sim.name}</h3>
                   <p className="text-sm text-gray-600">Duration: {sim.duration}</p>

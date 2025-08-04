@@ -3,7 +3,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://postgres:postgres@db:5432/postgres"
+    database_url: str = "sqlite:///./saas_app.db"
     
     # Security
     secret_key: str = "your-secret-key-here-change-in-production"

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { Toaster } from 'sonner';
-import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import UserTable from '@/components/UserTable';
 import AddUserModal from '@/components/AddUserModal';
@@ -23,7 +22,6 @@ export default function UsersPage() {
 
   return (
     <ProtectedRoute allowedRoles={['SuperUser', 'Admin']}>
-      <Layout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -73,7 +71,6 @@ export default function UsersPage() {
         />
         <Toaster position="top-right" />
       </div>
-      </Layout>
     </ProtectedRoute>
   );
 }

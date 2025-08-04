@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import Layout from '@/components/Layout';
 import { Globe, Plus, ExternalLink, Trash2 } from 'lucide-react';
 
 interface UrlFormData {
@@ -74,7 +73,6 @@ export default function WebsitesPage() {
   };
 
   return (
-    <Layout>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-blue-900">Website Viewer</h1>
@@ -203,6 +201,5 @@ export default function WebsitesPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import NewLayout from '@/components/NewLayout';
 import { ModernCard, ModernPageHeader, ModernButton } from '@/components/ui/modern-components';
 import { 
   DocumentIcon, 
@@ -104,8 +103,7 @@ export default function SecureFiles() {
 
   if (accessDenied) {
     return (
-      <NewLayout>
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
           <ModernCard>
             <div className="p-8 text-center">
               <LockClosedIcon className="mx-auto h-16 w-16 text-red-500" />
@@ -121,13 +119,11 @@ export default function SecureFiles() {
             </div>
           </ModernCard>
         </div>
-      </NewLayout>
     );
   }
 
   return (
-    <NewLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <ModernPageHeader
           title="Secure Files"
           description={`Access confidential documents and restricted materials - ${secureFiles.length} Files Available`}
@@ -287,6 +283,5 @@ export default function SecureFiles() {
           </div>
         </ModernCard>
       </div>
-    </NewLayout>
   );
 }

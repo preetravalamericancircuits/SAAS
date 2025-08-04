@@ -13,7 +13,14 @@ import {
   User,
   LogOut,
   Menu as MenuIcon,
-  X
+  X,
+  BarChart3,
+  FileText,
+  HelpCircle,
+  UserCircle,
+  TestTube,
+  Shield,
+  ExternalLink
 } from 'lucide-react';
 
 export default function Navigation() {
@@ -28,8 +35,12 @@ export default function Navigation() {
 
   const getNavigationItems = () => {
     const baseItems = [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['SuperUser', 'Admin', 'User'] },
-      { name: 'Websites', href: '/websites', icon: Globe, roles: ['SuperUser', 'Admin', 'User'] }
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['SuperUser', 'Admin', 'User', 'Manager', 'Operator', 'ITRA', 'Guest'] },
+      { name: 'Analytics', href: '/analytics', icon: BarChart3, roles: ['SuperUser', 'Admin', 'Manager'] },
+      { name: 'Reports', href: '/reports', icon: FileText, roles: ['SuperUser', 'Admin', 'Manager'] },
+      { name: 'Websites', href: '/websites', icon: Globe, roles: ['SuperUser', 'Admin', 'User', 'Manager', 'Operator'] },
+      { name: 'Simulations', href: '/simulations', icon: TestTube, roles: ['SuperUser', 'Admin', 'Manager', 'Operator'] },
+
     ];
 
     const adminItems = [
@@ -37,11 +48,22 @@ export default function Navigation() {
       { name: 'Tasks', href: '/tasks', icon: CheckSquare, roles: ['SuperUser', 'Admin'] }
     ];
 
+    const specialItems = [
+      { name: 'Secure Files', href: '/secure-files', icon: Shield, roles: ['SuperUser', 'ITRA'] },
+      { name: 'QA Test', href: '/qa-test', icon: TestTube, roles: ['SuperUser', 'Admin', 'Manager'] }
+    ];
+
+    const utilityItems = [
+      { name: 'Shortcuts', href: '/shortcuts', icon: ExternalLink, roles: ['SuperUser', 'Admin', 'User', 'Manager', 'Operator'] },
+      { name: 'Profile', href: '/profile', icon: UserCircle, roles: ['SuperUser', 'Admin', 'User', 'Manager', 'Operator', 'ITRA', 'Guest'] },
+      { name: 'Help', href: '/help', icon: HelpCircle, roles: ['SuperUser', 'Admin', 'User', 'Manager', 'Operator', 'ITRA', 'Guest'] }
+    ];
+
     const superUserItems = [
       { name: 'Settings', href: '/settings', icon: Settings, roles: ['SuperUser'] }
     ];
 
-    const allItems = [...baseItems, ...adminItems, ...superUserItems];
+    const allItems = [...baseItems, ...adminItems, ...specialItems, ...utilityItems, ...superUserItems];
     
     return allItems.filter(item => 
       item.roles.includes(user?.role || '')
@@ -77,12 +99,10 @@ export default function Navigation() {
 
       {/* Sidebar */}
       <motion.div 
-        className={`fixed lg:relative h-screen w-64 bg-white shadow-lg flex flex-col z-40 ${
+        className={`fixed lg:relative h-screen w-64 bg-white shadow-lg flex flex-col z-40 transition-transform duration-300 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
-        initial={{ x: -250 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        initial={false}
       >
       {/* Logo */}
       <motion.div 
@@ -91,7 +111,11 @@ export default function Navigation() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Link href="/dashboard" className="text-xl font-bold text-blue-900">
+        <Link 
+          href="/dashboard" 
+          className="text-xl font-bold text-blue-900"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
           SAAS Dashboard
         </Link>
       </motion.div>
@@ -115,6 +139,7 @@ export default function Navigation() {
                     ? 'bg-blue-900 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Icon className="w-5 h-5 mr-3" />
                 <span className="font-medium">{item.name}</span>

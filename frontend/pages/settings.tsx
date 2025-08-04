@@ -1,11 +1,9 @@
-import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Settings as SettingsIcon, Shield, Database, Server } from 'lucide-react';
 
 export default function SettingsPage() {
   return (
     <ProtectedRoute allowedRoles={['SuperUser']}>
-      <Layout>
         <div className="p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-blue-900">System Settings</h1>
@@ -106,7 +104,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </Layout>
     </ProtectedRoute>
   );
 }

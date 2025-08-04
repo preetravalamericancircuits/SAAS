@@ -44,7 +44,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       <ModernPageHeader 
         title="Dashboard" 
         description="Monitor your platform performance, user activity, and system health in real-time"

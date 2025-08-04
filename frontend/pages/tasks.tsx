@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import useSWR from 'swr';
-import Layout from '@/components/Layout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TaskTable from '@/components/TaskTable';
 import AddTaskModal from '@/components/AddTaskModal';
@@ -15,7 +14,6 @@ export default function TasksPage() {
 
   return (
     <ProtectedRoute allowedRoles={['SuperUser', 'Admin']}>
-      <Layout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -44,7 +42,6 @@ export default function TasksPage() {
           }}
         />
       </div>
-      </Layout>
     </ProtectedRoute>
   );
 }

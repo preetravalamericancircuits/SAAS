@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import NewLayout from '@/components/NewLayout';
 import { ModernCard, ModernPageHeader, ModernButton } from '@/components/ui/modern-components';
 import { 
-  UserCircleIcon, 
-  PencilIcon, 
-  KeyIcon,
-  BellIcon,
-  ShieldCheckIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+  UserCircle, 
+  Edit, 
+  Key,
+  Bell,
+  ShieldCheck,
+  Clock
+} from 'lucide-react';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -72,8 +71,7 @@ export default function Profile() {
   };
 
   return (
-    <NewLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <ModernPageHeader
           title="My Profile"
           description={`Manage your account settings and preferences - Role: ${user?.role || 'User'}`}
@@ -85,7 +83,7 @@ export default function Profile() {
             <ModernCard>
               <div className="p-6 text-center">
                 <div className="mx-auto h-24 w-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <UserCircleIcon className="h-16 w-16 text-white" />
+                  <UserCircle className="h-16 w-16 text-white" />
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-gray-900">
                   {user?.username}
@@ -93,12 +91,12 @@ export default function Profile() {
                 <p className="text-sm text-gray-500">{user?.email}</p>
                 <div className="mt-3">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(user?.role || '')}`}>
-                    <ShieldCheckIcon className="h-4 w-4 mr-1" />
+                    <ShieldCheck className="h-4 w-4 mr-1" />
                     {user?.role}
                   </span>
                 </div>
                 <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
-                  <ClockIcon className="h-4 w-4 mr-1" />
+                  <Clock className="h-4 w-4 mr-1" />
                   Last login: Today at 9:30 AM
                 </div>
               </div>
@@ -143,7 +141,7 @@ export default function Profile() {
                     onClick={() => setIsEditing(!isEditing)}
                     className="flex items-center space-x-1"
                   >
-                    <PencilIcon className="h-4 w-4" />
+                    <Edit className="h-4 w-4" />
                     <span>{isEditing ? 'Cancel' : 'Edit'}</span>
                   </ModernButton>
                 </div>
@@ -240,7 +238,7 @@ export default function Profile() {
             <ModernCard>
               <div className="p-6">
                 <div className="flex items-center mb-6">
-                  <KeyIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <Key className="h-5 w-5 text-gray-400 mr-2" />
                   <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
                 </div>
 
@@ -286,7 +284,7 @@ export default function Profile() {
             <ModernCard>
               <div className="p-6">
                 <div className="flex items-center mb-6">
-                  <BellIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <Bell className="h-5 w-5 text-gray-400 mr-2" />
                   <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
                 </div>
 
@@ -324,6 +322,5 @@ export default function Profile() {
           </div>
         </div>
       </div>
-    </NewLayout>
   );
 }

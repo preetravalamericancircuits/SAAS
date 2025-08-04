@@ -1,4 +1,4 @@
-import { DocumentChartBarIcon, PlusIcon, CalendarIcon, ClockIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import { BarChart3, Plus, Calendar, Clock, Download } from 'lucide-react';
 import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge } from '@/components/ui/modern-components';
 
 export default function Reports() {
@@ -8,10 +8,10 @@ export default function Reports() {
   };
 
   const reportStats = [
-    { name: 'Total Reports', value: '156', icon: DocumentChartBarIcon, color: 'bg-blue-600' },
-    { name: 'Generated Today', value: '12', icon: PlusIcon, color: 'bg-green-600' },
-    { name: 'Scheduled', value: '8', icon: CalendarIcon, color: 'bg-yellow-600' },
-    { name: 'Downloads', value: '89', icon: DocumentArrowDownIcon, color: 'bg-purple-600' }
+    { name: 'Total Reports', value: '156', icon: BarChart3, color: 'bg-blue-600' },
+    { name: 'Generated Today', value: '12', icon: Plus, color: 'bg-green-600' },
+    { name: 'Scheduled', value: '8', icon: Calendar, color: 'bg-yellow-600' },
+    { name: 'Downloads', value: '89', icon: Download, color: 'bg-purple-600' }
   ];
 
   const recentReports = [
@@ -31,7 +31,7 @@ export default function Reports() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       <ModernPageHeader 
         title="Reports" 
         description="Comprehensive reporting system with automated generation, scheduling, and advanced analytics"
@@ -118,7 +118,7 @@ export default function Reports() {
           {recentReports.map((report) => (
             <div key={report.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-4">
-                <DocumentChartBarIcon className="h-8 w-8 text-primary-600" />
+                <BarChart3 className="h-8 w-8 text-primary-600" />
                 <div>
                   <h3 className="font-medium text-gray-900">{report.name}</h3>
                   <p className="text-sm text-gray-600">{report.type} • {report.date}</p>

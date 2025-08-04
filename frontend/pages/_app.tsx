@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
-import NewLayout from '@/components/NewLayout';
+import Layout from '@/components/Layout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,9 +24,9 @@ function AppContent({ Component, pageProps }: AppProps) {
   }
   
   return (
-    <NewLayout>
+    <Layout>
       <Component {...pageProps} />
-    </NewLayout>
+    </Layout>
   );
 }
 

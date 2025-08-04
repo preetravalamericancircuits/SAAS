@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import NewLayout from '@/components/NewLayout';
 import { ModernCard, ModernPageHeader, ModernButton } from '@/components/ui/modern-components';
 import { 
-  QuestionMarkCircleIcon, 
-  BookOpenIcon, 
-  ChatBubbleLeftRightIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  DocumentTextIcon,
-  VideoCameraIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
+  HelpCircle, 
+  BookOpen, 
+  MessageCircle,
+  Phone,
+  Mail,
+  FileText,
+  Video,
+  Search
+} from 'lucide-react';
 
 const faqData = [
   {
@@ -40,28 +39,28 @@ const supportChannels = [
   {
     name: 'Live Chat',
     description: 'Get instant help from our support team',
-    icon: ChatBubbleLeftRightIcon,
+    icon: MessageCircle,
     action: 'Start Chat',
     available: '24/7'
   },
   {
     name: 'Phone Support',
     description: 'Speak directly with a support specialist',
-    icon: PhoneIcon,
+    icon: Phone,
     action: 'Call Now',
     available: 'Mon-Fri 9AM-6PM'
   },
   {
     name: 'Email Support',
     description: 'Send us a detailed message',
-    icon: EnvelopeIcon,
+    icon: Mail,
     action: 'Send Email',
     available: 'Response within 24h'
   },
   {
     name: 'Video Call',
     description: 'Schedule a screen sharing session',
-    icon: VideoCameraIcon,
+    icon: Video,
     action: 'Schedule Call',
     available: 'By appointment'
   }
@@ -71,28 +70,28 @@ const resources = [
   {
     title: 'User Guide',
     description: 'Complete guide to using the platform',
-    icon: BookOpenIcon,
+    icon: BookOpen,
     type: 'PDF',
     size: '2.1 MB'
   },
   {
     title: 'API Documentation',
     description: 'Technical documentation for developers',
-    icon: DocumentTextIcon,
+    icon: FileText,
     type: 'Web',
     size: 'Online'
   },
   {
     title: 'Video Tutorials',
     description: 'Step-by-step video walkthroughs',
-    icon: VideoCameraIcon,
+    icon: Video,
     type: 'Video',
     size: '15 videos'
   },
   {
     title: 'Quick Start Guide',
     description: 'Get up and running in 5 minutes',
-    icon: DocumentTextIcon,
+    icon: FileText,
     type: 'PDF',
     size: '890 KB'
   }
@@ -130,8 +129,7 @@ export default function Help() {
   };
 
   return (
-    <NewLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <ModernPageHeader
           title="Help & Support"
           description="Find answers to your questions and get the help you need - 24/7 Support Available"
@@ -165,7 +163,7 @@ export default function Help() {
         <ModernCard>
           <div className="p-6">
             <div className="flex items-center mb-6">
-              <QuestionMarkCircleIcon className="h-6 w-6 text-blue-600 mr-2" />
+              <HelpCircle className="h-6 w-6 text-blue-600 mr-2" />
               <h2 className="text-xl font-semibold text-gray-900">Frequently Asked Questions</h2>
             </div>
 
@@ -178,7 +176,7 @@ export default function Help() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
 
             {/* FAQ List */}
@@ -205,7 +203,7 @@ export default function Help() {
 
             {filteredFaqs.length === 0 && (
               <div className="text-center py-8">
-                <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <HelpCircle className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No FAQs found</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Try adjusting your search terms or contact support directly.
@@ -219,7 +217,7 @@ export default function Help() {
         <ModernCard>
           <div className="p-6">
             <div className="flex items-center mb-6">
-              <BookOpenIcon className="h-6 w-6 text-blue-600 mr-2" />
+              <BookOpen className="h-6 w-6 text-blue-600 mr-2" />
               <h2 className="text-xl font-semibold text-gray-900">Resources & Documentation</h2>
             </div>
 
@@ -259,19 +257,19 @@ export default function Help() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Contact Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <PhoneIcon className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+                <Phone className="mx-auto h-8 w-8 text-blue-600 mb-2" />
                 <h3 className="font-medium text-gray-900">Phone</h3>
                 <p className="text-sm text-gray-500">(555) 123-4567</p>
                 <p className="text-xs text-gray-400 mt-1">Mon-Fri 9AM-6PM EST</p>
               </div>
               <div className="text-center">
-                <EnvelopeIcon className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+                <Mail className="mx-auto h-8 w-8 text-blue-600 mb-2" />
                 <h3 className="font-medium text-gray-900">Email</h3>
                 <p className="text-sm text-gray-500">support@saasplatform.com</p>
                 <p className="text-xs text-gray-400 mt-1">Response within 24 hours</p>
               </div>
               <div className="text-center">
-                <ChatBubbleLeftRightIcon className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+                <MessageCircle className="mx-auto h-8 w-8 text-blue-600 mb-2" />
                 <h3 className="font-medium text-gray-900">Live Chat</h3>
                 <p className="text-sm text-gray-500">Available 24/7</p>
                 <p className="text-xs text-gray-400 mt-1">Average response: 2 minutes</p>
@@ -316,6 +314,5 @@ export default function Help() {
           </div>
         </ModernCard>
       </div>
-    </NewLayout>
   );
 }

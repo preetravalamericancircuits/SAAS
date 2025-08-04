@@ -24,8 +24,12 @@ from auth import (
 )
 from config import settings
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables (if they don't exist)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Warning: Could not create database tables: {e}")
+    print("Please run 'python init_db.py' to initialize the database")
 
 app = FastAPI(
     title="ACI API",
@@ -780,6 +784,49 @@ async def delete_person(
     db.commit()
     
     return {"message": "Person deleted successfully"}
+
+# Tasks endpoints
+@app.get("/api/tasks")
+async def get_tasks(current_user: User = Depends(requires_any_role(["SuperUser", "Admin"]))):
+    """Get all tasks (Admin only)"""
+    return [
+        {"id": 1, "title": "System Maintenance", "status": "In Progress", "priority": "High", "assigned_to": "admin", "due_date": "2024-01-20"},
+        {"id": 2, "title": "User Training", "status": "Completed", "priority": "Medium", "assigned_to": "manager", "due_date": "2024-01-15"},
+        {"id": 3, "title": "Security Audit", "status": "Pending", "priority": "High", "assigned_to": "itra", "due_date": "2024-01-25"}
+    ]
+
+# Websites endpoints
+@app.get("/api/websites")
+async def get_websites(current_user: User = Depends(get_current_user)):
+    """Get website monitoring data"""
+    return [
+        {"id": 1, "name": "Main Website", "url": "https://example.com", "status": "Online", "response_time": "120ms", "uptime": "99.9%"},
+        {"id": 2, "name": "API Server", "url": "https://api.example.com", "status": "Online", "response_time": "85ms", "uptime": "99.8%"},
+        {"id": 3, "name": "CDN", "url": "https://cdn.example.com", "status": "Online", "response_time": "45ms", "uptime": "100%"}
+    ]
+
+# Analytics endpoints
+@app.get("/api/analytics")
+async def get_analytics(current_user: User = Depends(requires_any_role(["SuperUser", "Admin", "Manager"]))):
+    """Get analytics data"""
+    return {
+        "page_views": 45231,
+        "unique_visitors": 12450,
+        "bounce_rate": 42.1,
+        "conversion_rate": 3.24,
+        "top_pages": [
+            {"/dashboard": 12450},
+            {"/analytics": 8230},
+            {"/users": 5670},
+            {"/reports": 4120}
+        ],
+        "traffic_sources": {
+            "direct": 45.2,
+            "search": 32.1,
+            "social": 12.7,
+            "referral": 10.0
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn

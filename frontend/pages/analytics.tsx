@@ -1,4 +1,4 @@
-import { ChartBarIcon, DocumentArrowDownIcon, EyeIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
+import { BarChart3, Download, Eye, TrendingUp } from 'lucide-react';
 import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard } from '@/components/ui/modern-components';
 
 export default function Analytics() {
@@ -32,14 +32,14 @@ export default function Analytics() {
   };
 
   const analyticsStats = [
-    { name: 'Page Views', value: '45,231', icon: EyeIcon, color: 'bg-blue-600', trend: { value: '+15%', isPositive: true } },
-    { name: 'Conversion Rate', value: '3.24%', icon: ArrowTrendingUpIcon, color: 'bg-green-600', trend: { value: '+0.5%', isPositive: true } },
-    { name: 'Bounce Rate', value: '42.1%', icon: ChartBarIcon, color: 'bg-yellow-600', trend: { value: '-2.3%', isPositive: true } },
-    { name: 'Revenue', value: '$12,450', icon: DocumentArrowDownIcon, color: 'bg-purple-600', trend: { value: '+8%', isPositive: true } }
+    { name: 'Page Views', value: '45,231', icon: Eye, color: 'bg-blue-600', trend: { value: '+15%', isPositive: true } },
+    { name: 'Conversion Rate', value: '3.24%', icon: TrendingUp, color: 'bg-green-600', trend: { value: '+0.5%', isPositive: true } },
+    { name: 'Bounce Rate', value: '42.1%', icon: BarChart3, color: 'bg-yellow-600', trend: { value: '-2.3%', isPositive: true } },
+    { name: 'Revenue', value: '$12,450', icon: Download, color: 'bg-purple-600', trend: { value: '+8%', isPositive: true } }
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       <ModernPageHeader 
         title="Analytics" 
         description="Comprehensive analytics dashboard with real-time metrics, user behavior insights, and performance tracking"
@@ -104,7 +104,7 @@ export default function Analytics() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Overview</h2>
             <div className="h-64 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <ChartBarIcon className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+                <BarChart3 className="h-16 w-16 text-blue-400 mx-auto mb-4" />
                 <p className="text-gray-600">Interactive charts showing traffic trends, conversion rates, and user engagement metrics</p>
               </div>
             </div>
