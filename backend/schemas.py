@@ -45,6 +45,14 @@ class PersonCreateWithAutoPassword(BaseModel):
             raise ValueError('Username must be less than 50 characters')
         return v
 
+class PersonResponse(PersonBase):
+    id: str
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class PersonCreateResponse(BaseModel):
     message: str
     person: PersonResponse
@@ -64,14 +72,6 @@ class PersonUpdate(BaseModel):
             if len(v) > 50:
                 raise ValueError('Username must be less than 50 characters')
         return v
-
-class PersonResponse(PersonBase):
-    id: str
-    is_active: bool
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 # User schemas
 class UserBase(BaseModel):
@@ -109,6 +109,16 @@ class UserCreateWithAutoPassword(BaseModel):
             raise ValueError('Username must be less than 50 characters')
         return v
 
+class UserResponse(UserBase):
+    id: int
+    role: Optional[str] = None
+    permissions: List[str] = []
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class UserCreateResponse(BaseModel):
     message: str
     user: UserResponse
@@ -128,16 +138,6 @@ class UserUpdate(BaseModel):
             if len(v) > 50:
                 raise ValueError('Username must be less than 50 characters')
         return v
-
-class UserResponse(UserBase):
-    id: int
-    role: Optional[str] = None
-    permissions: List[str] = []
-    is_active: bool
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 # Authentication schemas
 class LoginRequest(BaseModel):

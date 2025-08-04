@@ -1,36 +1,122 @@
+import { DocumentChartBarIcon, PlusIcon, CalendarIcon, ClockIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge } from '@/components/ui/modern-components';
+
 export default function Reports() {
   const handleButtonClick = (action: string) => {
     console.log(`Reports action: ${action}`);
     alert(`${action} clicked!`);
   };
 
+  const reportStats = [
+    { name: 'Total Reports', value: '156', icon: DocumentChartBarIcon, color: 'bg-blue-600' },
+    { name: 'Generated Today', value: '12', icon: PlusIcon, color: 'bg-green-600' },
+    { name: 'Scheduled', value: '8', icon: CalendarIcon, color: 'bg-yellow-600' },
+    { name: 'Downloads', value: '89', icon: DocumentArrowDownIcon, color: 'bg-purple-600' }
+  ];
+
+  const recentReports = [
+    { id: 1, name: 'Monthly Performance Report', type: 'Performance', date: '2024-01-15', status: 'Ready' },
+    { id: 2, name: 'User Analytics Summary', type: 'Analytics', date: '2024-01-14', status: 'Generating' },
+    { id: 3, name: 'Security Audit Report', type: 'Security', date: '2024-01-13', status: 'Ready' },
+    { id: 4, name: 'System Health Check', type: 'System', date: '2024-01-12', status: 'Scheduled' }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Ready': return 'success';
+      case 'Generating': return 'warning';
+      case 'Scheduled': return 'info';
+      default: return 'primary';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="bg-background rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Reports</h1>
-        <p className="text-gray-600 mb-6">This is the Reports page</p>
-        
-        <div className="flex space-x-4">
-          <button
+    <div className="space-y-8">
+      <ModernPageHeader 
+        title="Reports" 
+        description="Generate, schedule, and manage your reports"
+        action={
+          <ModernButton onClick={() => handleButtonClick('Create Report')}>
+            Create Report
+          </ModernButton>
+        }
+      />
+      
+      {/* Report Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {reportStats.map((stat) => (
+          <ModernStatsCard
+            key={stat.name}
+            title={stat.name}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+          />
+        ))}
+      </div>
+      
+      {/* Report Actions */}
+      <ModernCard className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Report Management</h2>
+        <div className="flex flex-wrap gap-4">
+          <ModernButton
             onClick={() => handleButtonClick('Create Report')}
-            className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-800"
+            variant="primary"
           >
             Create Report
-          </button>
-          <button
+          </ModernButton>
+          <ModernButton
             onClick={() => handleButtonClick('Schedule Report')}
-            className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-blue-500"
+            variant="secondary"
           >
             Schedule Report
-          </button>
-          <button
+          </ModernButton>
+          <ModernButton
             onClick={() => handleButtonClick('View History')}
-            className="border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary hover:text-white"
+            variant="outline"
           >
             View History
-          </button>
+          </ModernButton>
+          <ModernButton
+            onClick={() => handleButtonClick('Export All')}
+            variant="ghost"
+          >
+            Export All
+          </ModernButton>
         </div>
-      </div>
+      </ModernCard>
+      
+      {/* Recent Reports */}
+      <ModernCard className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Reports</h2>
+        <div className="space-y-4">
+          {recentReports.map((report) => (
+            <div key={report.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <DocumentChartBarIcon className="h-8 w-8 text-primary-600" />
+                <div>
+                  <h3 className="font-medium text-gray-900">{report.name}</h3>
+                  <p className="text-sm text-gray-600">{report.type} • {report.date}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <ModernBadge variant={getStatusColor(report.status) as any}>
+                  {report.status}
+                </ModernBadge>
+                {report.status === 'Ready' && (
+                  <ModernButton 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleButtonClick(`Download ${report.name}`)}
+                  >
+                    Download
+                  </ModernButton>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ModernCard>
     </div>
   );
 }

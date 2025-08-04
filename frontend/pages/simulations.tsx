@@ -1,36 +1,123 @@
+import { BeakerIcon, PlayIcon, DocumentArrowDownIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard, ModernBadge } from '@/components/ui/modern-components';
+
 export default function Simulations() {
   const handleButtonClick = (action: string) => {
     console.log(`Simulations action: ${action}`);
     alert(`${action} clicked!`);
   };
 
+  const simulationStats = [
+    { name: 'Running Simulations', value: '8', icon: PlayIcon, color: 'bg-green-600' },
+    { name: 'Completed Today', value: '24', icon: BeakerIcon, color: 'bg-blue-600' },
+    { name: 'Queue Length', value: '3', icon: ClockIcon, color: 'bg-yellow-600' },
+    { name: 'Success Rate', value: '96.8%', icon: DocumentArrowDownIcon, color: 'bg-purple-600' }
+  ];
+
+  const recentSimulations = [
+    { id: 1, name: 'Load Test Simulation', status: 'Running', progress: 75, duration: '2h 15m' },
+    { id: 2, name: 'Performance Analysis', status: 'Completed', progress: 100, duration: '1h 45m' },
+    { id: 3, name: 'Stress Test', status: 'Queued', progress: 0, duration: 'Pending' },
+    { id: 4, name: 'Security Scan', status: 'Failed', progress: 45, duration: '30m' }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Running': return 'warning';
+      case 'Completed': return 'success';
+      case 'Queued': return 'info';
+      case 'Failed': return 'error';
+      default: return 'primary';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="bg-background rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Simulations</h1>
-        <p className="text-gray-600 mb-6">This is the Simulations page</p>
-        
-        <div className="flex space-x-4">
-          <button
+    <div className="space-y-8">
+      <ModernPageHeader 
+        title="Simulations" 
+        description="Manage and monitor your simulation processes"
+        action={
+          <ModernButton onClick={() => handleButtonClick('Run New Simulation')}>
+            Run New Simulation
+          </ModernButton>
+        }
+      />
+      
+      {/* Simulation Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {simulationStats.map((stat) => (
+          <ModernStatsCard
+            key={stat.name}
+            title={stat.name}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+          />
+        ))}
+      </div>
+      
+      {/* Simulation Actions */}
+      <ModernCard className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Simulation Controls</h2>
+        <div className="flex flex-wrap gap-4">
+          <ModernButton
             onClick={() => handleButtonClick('Run New Simulation')}
-            className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-800"
+            variant="primary"
           >
             Run New Simulation
-          </button>
-          <button
+          </ModernButton>
+          <ModernButton
             onClick={() => handleButtonClick('View Details')}
-            className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-blue-500"
+            variant="secondary"
           >
             View Details
-          </button>
-          <button
+          </ModernButton>
+          <ModernButton
             onClick={() => handleButtonClick('Download Report')}
-            className="border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary hover:text-white"
+            variant="outline"
           >
             Download Report
-          </button>
+          </ModernButton>
+          <ModernButton
+            onClick={() => handleButtonClick('Pause All')}
+            variant="ghost"
+          >
+            Pause All
+          </ModernButton>
         </div>
-      </div>
+      </ModernCard>
+      
+      {/* Recent Simulations */}
+      <ModernCard className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Simulations</h2>
+        <div className="space-y-4">
+          {recentSimulations.map((sim) => (
+            <div key={sim.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <BeakerIcon className="h-8 w-8 text-primary-600" />
+                <div>
+                  <h3 className="font-medium text-gray-900">{sim.name}</h3>
+                  <p className="text-sm text-gray-600">Duration: {sim.duration}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">{sim.progress}%</div>
+                  <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                    <div 
+                      className="bg-primary-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${sim.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <ModernBadge variant={getStatusColor(sim.status) as any}>
+                  {sim.status}
+                </ModernBadge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ModernCard>
     </div>
   );
 }

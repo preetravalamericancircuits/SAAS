@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export default function NewLayout({ children }: LayoutProps) {
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
+    <div className="h-screen flex overflow-hidden bg-gradient-to-br from-blue-50 to-white">
       <NewSidebar />
       
       <div className="flex flex-col w-0 flex-1 overflow-hidden lg:ml-64">

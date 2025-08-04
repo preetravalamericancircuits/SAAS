@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { EyeIcon, EyeSlashIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 interface LoginFormData {
-  email: string;
+  username: string;
   password: string;
   rememberMe: boolean;
 }
@@ -30,9 +30,9 @@ export default function LoginForm() {
     setError('');
     
     try {
-      const success = await login(data.email, data.password);
+      const success = await login(data.username, data.password);
       if (!success) {
-        setError('Invalid email or password. Please try again.');
+        setError('Invalid username or password. Please try again.');
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'An error occurred during login. Please try again.');
@@ -42,48 +42,45 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+        <Card className="shadow-2xl border-0 bg-white backdrop-blur-sm">
           <CardContent className="p-8">
             <div className="text-center mb-8">
               <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mb-4">
                 <LockClosedIcon className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back 👋</h1>
-              <p className="text-gray-600 text-sm">Sign in to your account to continue</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+              <p className="text-gray-600 text-sm">Sign in to your SAAS account</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                    Username
                   </label>
                   <div className="relative">
                     <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <Input
-                      {...register('email', {
-                        required: 'Email is required',
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Invalid email address'
-                        }
+                      {...register('username', {
+                        required: 'Username is required',
+                        minLength: { value: 3, message: 'Username must be at least 3 characters' }
                       })}
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
                       className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      aria-invalid={errors.email ? 'true' : 'false'}
+                      aria-invalid={errors.username ? 'true' : 'false'}
                     />
                   </div>
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+                  {errors.username && (
+                    <p className="mt-1 text-sm text-red-600" role="alert">{errors.username.message}</p>
                   )}
                 </div>
 
@@ -163,9 +160,16 @@ export default function LoginForm() {
               </Button>
 
               <div className="text-center pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
-                  Demo: preet / password123
+                <p className="text-xs text-gray-500 mb-2">
+                  Demo Accounts:
                 </p>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p><strong>SuperUser:</strong> preet / password123</p>
+                  <p><strong>Admin:</strong> admin / admin123</p>
+                  <p><strong>ITRA:</strong> itra1 / password123</p>
+                  <p><strong>Operator:</strong> operator1 / password123</p>
+                  <p><strong>User:</strong> user1 / password123</p>
+                </div>
               </div>
             </form>
           </CardContent>

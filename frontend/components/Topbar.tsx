@@ -33,7 +33,7 @@ export default function Topbar() {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <div className="bg-background border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
+    <div className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Breadcrumb */}
         <nav className="flex" aria-label="Breadcrumb">
@@ -64,10 +64,10 @@ export default function Topbar() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 text-gray-400 hover:text-gray-500 relative"
+              className="p-2 text-gray-400 hover:text-primary-600 relative transition-colors duration-200"
             >
               <BellIcon className="h-6 w-6" />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400"></span>
+              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
             </button>
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
@@ -90,9 +90,9 @@ export default function Topbar() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:bg-gray-50 p-1 transition-colors duration-200"
             >
-              <UserCircleIcon className="h-8 w-8 text-gray-400" />
+              <UserCircleIcon className="h-8 w-8 text-primary-600" />
             </button>
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
