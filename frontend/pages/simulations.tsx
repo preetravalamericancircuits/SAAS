@@ -35,7 +35,7 @@ export default function Simulations() {
     <div className="space-y-8">
       <ModernPageHeader 
         title="Simulations" 
-        description="Manage and monitor your simulation processes"
+        description="Advanced simulation management system for load testing, performance analysis, and system validation"
         action={
           <ModernButton onClick={() => handleButtonClick('Run New Simulation')}>
             Run New Simulation
@@ -56,9 +56,29 @@ export default function Simulations() {
         ))}
       </div>
       
-      {/* Simulation Actions */}
+      {/* Simulation Types */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Load Testing</h3>
+          <p className="text-sm text-gray-600 mb-4">Test system performance under expected load conditions</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Start Load Test')}>Start Load Test</ModernButton>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Stress Testing</h3>
+          <p className="text-sm text-gray-600 mb-4">Push system beyond normal capacity to find breaking points</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Start Stress Test')}>Start Stress Test</ModernButton>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Security Scan</h3>
+          <p className="text-sm text-gray-600 mb-4">Comprehensive security vulnerability assessment</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Start Security Scan')}>Start Security Scan</ModernButton>
+        </ModernCard>
+      </div>
+      
+      {/* Simulation Controls */}
       <ModernCard className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Simulation Controls</h2>
+        <p className="text-sm text-gray-600 mb-6">Manage your simulation processes with advanced controls and monitoring</p>
         <div className="flex flex-wrap gap-4">
           <ModernButton
             onClick={() => handleButtonClick('Run New Simulation')}

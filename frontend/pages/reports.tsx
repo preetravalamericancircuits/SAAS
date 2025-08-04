@@ -34,7 +34,7 @@ export default function Reports() {
     <div className="space-y-8">
       <ModernPageHeader 
         title="Reports" 
-        description="Generate, schedule, and manage your reports"
+        description="Comprehensive reporting system with automated generation, scheduling, and advanced analytics"
         action={
           <ModernButton onClick={() => handleButtonClick('Create Report')}>
             Create Report
@@ -55,9 +55,34 @@ export default function Reports() {
         ))}
       </div>
       
-      {/* Report Actions */}
+      {/* Report Templates */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Performance Report</h3>
+          <p className="text-sm text-gray-600 mb-4">System performance metrics and analysis</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Generate Performance Report')}>Generate</ModernButton>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">User Analytics</h3>
+          <p className="text-sm text-gray-600 mb-4">User behavior and engagement metrics</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Generate User Report')}>Generate</ModernButton>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Security Audit</h3>
+          <p className="text-sm text-gray-600 mb-4">Security assessment and vulnerability report</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Generate Security Report')}>Generate</ModernButton>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Custom Report</h3>
+          <p className="text-sm text-gray-600 mb-4">Build your own custom report template</p>
+          <ModernButton size="sm" onClick={() => handleButtonClick('Create Custom Report')}>Create</ModernButton>
+        </ModernCard>
+      </div>
+      
+      {/* Report Management */}
       <ModernCard className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Report Management</h2>
+        <p className="text-sm text-gray-600 mb-6">Create, schedule, and manage all your reports from one central location</p>
         <div className="flex flex-wrap gap-4">
           <ModernButton
             onClick={() => handleButtonClick('Create Report')}

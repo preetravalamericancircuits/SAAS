@@ -13,14 +13,11 @@ import {
   WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
 
-import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
-
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: 'Simulations', href: '/simulations', icon: BeakerIcon },
   { name: 'Reports', href: '/reports', icon: DocumentChartBarIcon },
-  { name: 'Tools', href: '/tools', icon: WrenchScrewdriverIcon },
   { name: 'User Management', href: '/users', icon: UsersIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];

@@ -1,4 +1,4 @@
-import { ChartBarIcon, DocumentArrowDownIcon, EyeIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, DocumentArrowDownIcon, EyeIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard } from '@/components/ui/modern-components';
 
 export default function Analytics() {
@@ -33,7 +33,7 @@ export default function Analytics() {
 
   const analyticsStats = [
     { name: 'Page Views', value: '45,231', icon: EyeIcon, color: 'bg-blue-600', trend: { value: '+15%', isPositive: true } },
-    { name: 'Conversion Rate', value: '3.24%', icon: TrendingUpIcon, color: 'bg-green-600', trend: { value: '+0.5%', isPositive: true } },
+    { name: 'Conversion Rate', value: '3.24%', icon: ArrowTrendingUpIcon, color: 'bg-green-600', trend: { value: '+0.5%', isPositive: true } },
     { name: 'Bounce Rate', value: '42.1%', icon: ChartBarIcon, color: 'bg-yellow-600', trend: { value: '-2.3%', isPositive: true } },
     { name: 'Revenue', value: '$12,450', icon: DocumentArrowDownIcon, color: 'bg-purple-600', trend: { value: '+8%', isPositive: true } }
   ];
@@ -42,7 +42,7 @@ export default function Analytics() {
     <div className="space-y-8">
       <ModernPageHeader 
         title="Analytics" 
-        description="Track your platform performance and user engagement"
+        description="Comprehensive analytics dashboard with real-time metrics, user behavior insights, and performance tracking"
         action={
           <ModernButton onClick={() => handleButtonClick('Refresh Data')}>
             Refresh Data
@@ -97,13 +97,58 @@ export default function Analytics() {
         </div>
       </ModernCard>
       
-      {/* Chart Placeholder */}
+      {/* Detailed Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <ModernCard className="p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Overview</h2>
+            <div className="h-64 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <ChartBarIcon className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+                <p className="text-gray-600">Interactive charts showing traffic trends, conversion rates, and user engagement metrics</p>
+              </div>
+            </div>
+          </ModernCard>
+        </div>
+        
+        <ModernCard className="p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Top Pages</h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">/dashboard</span>
+              <span className="text-sm font-medium text-gray-900">12,450 views</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">/analytics</span>
+              <span className="text-sm font-medium text-gray-900">8,230 views</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">/users</span>
+              <span className="text-sm font-medium text-gray-900">5,670 views</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">/reports</span>
+              <span className="text-sm font-medium text-gray-900">4,120 views</span>
+            </div>
+          </div>
+        </ModernCard>
+      </div>
+      
+      {/* User Behavior */}
       <ModernCard className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Overview</h2>
-        <div className="h-64 bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg flex items-center justify-center">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">User Behavior Analysis</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <ChartBarIcon className="h-16 w-16 text-primary-400 mx-auto mb-4" />
-            <p className="text-gray-600">Interactive charts will be displayed here</p>
+            <div className="text-2xl font-bold text-blue-600">2.5 min</div>
+            <div className="text-sm text-gray-600">Average Session Duration</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">4.2</div>
+            <div className="text-sm text-gray-600">Pages per Session</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">68%</div>
+            <div className="text-sm text-gray-600">Returning Visitors</div>
           </div>
         </div>
       </ModernCard>

@@ -45,7 +45,7 @@ export default function Settings() {
     <div className="space-y-8">
       <ModernPageHeader 
         title="Settings" 
-        description="Manage your account settings and preferences"
+        description="Comprehensive system configuration, user preferences, security settings, and platform customization options"
       />
       
       {/* Profile Information */}
@@ -111,9 +111,67 @@ export default function Settings() {
         ))}
       </div>
       
+      {/* System Configuration */}
+      <ModernCard className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">System Configuration</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Platform Settings</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Maintenance Mode</span>
+                <button className="w-10 h-6 bg-gray-200 rounded-full relative">
+                  <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform"></div>
+                </button>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Auto Backup</span>
+                <button className="w-10 h-6 bg-blue-600 rounded-full relative">
+                  <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-transform"></div>
+                </button>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Email Notifications</span>
+                <button className="w-10 h-6 bg-blue-600 rounded-full relative">
+                  <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-transform"></div>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Security Settings</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Two-Factor Auth</span>
+                <button className="w-10 h-6 bg-blue-600 rounded-full relative">
+                  <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-transform"></div>
+                </button>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Session Timeout</span>
+                <select className="text-sm border border-gray-300 rounded px-2 py-1">
+                  <option>30 minutes</option>
+                  <option>1 hour</option>
+                  <option>4 hours</option>
+                </select>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Login Attempts</span>
+                <select className="text-sm border border-gray-300 rounded px-2 py-1">
+                  <option>3 attempts</option>
+                  <option>5 attempts</option>
+                  <option>10 attempts</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ModernCard>
+      
       {/* Quick Actions */}
       <ModernCard className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <p className="text-sm text-gray-600 mb-6">Frequently used settings and configuration options for quick access</p>
         <div className="flex flex-wrap gap-4">
           <ModernButton
             onClick={() => handleButtonClick('Update Profile')}

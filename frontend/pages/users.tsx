@@ -69,7 +69,7 @@ export default function Users() {
     <div className="space-y-8">
       <ModernPageHeader 
         title="User Management" 
-        description="Manage users, roles, and permissions"
+        description="Comprehensive user administration with role-based access control, permissions management, and activity monitoring"
         action={
           <ModernButton onClick={() => handleButtonClick('Add User')}>
             Add User
@@ -90,9 +90,38 @@ export default function Users() {
         ))}
       </div>
       
-      {/* User Management Actions */}
+      {/* Role Management */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">SuperUsers</h3>
+          <p className="text-sm text-gray-600 mb-2">Full system access</p>
+          <div className="text-2xl font-bold text-red-600">4</div>
+          <p className="text-xs text-gray-500">preet, kanav, khash, tony</p>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Operators</h3>
+          <p className="text-sm text-gray-600 mb-2">System operations</p>
+          <div className="text-2xl font-bold text-yellow-600">2</div>
+          <p className="text-xs text-gray-500">kris, abhishek</p>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Users</h3>
+          <p className="text-sm text-gray-600 mb-2">Standard access</p>
+          <div className="text-2xl font-bold text-blue-600">2</div>
+          <p className="text-xs text-gray-500">pratiksha, cathy</p>
+        </ModernCard>
+        <ModernCard className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">ITRA</h3>
+          <p className="text-sm text-gray-600 mb-2">Technical review</p>
+          <div className="text-2xl font-bold text-purple-600">1</div>
+          <p className="text-xs text-gray-500">itra1</p>
+        </ModernCard>
+      </div>
+      
+      {/* User Management Tools */}
       <ModernCard className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">User Management Tools</h2>
+        <p className="text-sm text-gray-600 mb-6">Complete user administration toolkit with role assignment, permission management, and activity tracking</p>
         <div className="flex flex-wrap gap-4">
           <ModernButton
             onClick={() => handleButtonClick('Add User')}
@@ -128,7 +157,7 @@ export default function Users() {
           {recentUsers.map((user) => (
             <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-4">
-                <UserCircleIcon className="h-10 w-10 text-primary-600" />
+                <UserCircleIcon className="h-10 w-10 text-blue-600" />
                 <div>
                   <h3 className="font-medium text-gray-900">{user.name}</h3>
                   <p className="text-sm text-gray-600">{user.email}</p>
