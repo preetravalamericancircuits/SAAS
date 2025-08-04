@@ -1,0 +1,36 @@
+export default function Reports() {
+  const handleButtonClick = (action: string) => {
+    console.log(`Reports action: ${action}`);
+    alert(`${action} clicked!`);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-background rounded-lg shadow p-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Reports</h1>
+        <p className="text-gray-600 mb-6">This is the Reports page</p>
+        
+        <div className="flex space-x-4">
+          <button
+            onClick={() => handleButtonClick('Create Report')}
+            className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-800"
+          >
+            Create Report
+          </button>
+          <button
+            onClick={() => handleButtonClick('Schedule Report')}
+            className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-blue-500"
+          >
+            Schedule Report
+          </button>
+          <button
+            onClick={() => handleButtonClick('View History')}
+            className="border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary hover:text-white"
+          >
+            View History
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

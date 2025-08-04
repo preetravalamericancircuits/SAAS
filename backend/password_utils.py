@@ -4,30 +4,83 @@ Password generation utilities for secure user creation
 
 import secrets
 import string
-from typing import str
+from passlib.context import CryptContext
+from typing import Tuple
 
-def generate_secure_password(length: int = 12) -> str:
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def generate_strong_password(length: int = 12) -> str:
     """
-    Generate a cryptographically secure random password.
+    Generate a cryptographically secure strong password.
     
     Args:
         length: Password length (default 12)
         
     Returns:
-        Secure random password string
+        Strong random password with mixed character types
     """
-    # Use URL-safe characters for better compatibility
-    return secrets.token_urlsafe(length)
+    # Ensure minimum complexity requirements
+    if length < 8:
+        length = 8
+    
+    # Character sets for strong passwords
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    symbols = "!@#$%^&*"
+    
+    # Ensure at least one character from each set
+    password = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase),
+        secrets.choice(digits),
+        secrets.choice(symbols)
+    ]
+    
+    # Fill remaining length with random choices from all sets
+    all_chars = lowercase + uppercase + digits + symbols
+    for _ in range(length - 4):
+        password.append(secrets.choice(all_chars))
+    
+    # Shuffle to avoid predictable patterns
+    secrets.SystemRandom().shuffle(password)
+    return ''.join(password)
 
-def generate_readable_password(length: int = 12) -> str:
+def hash_password(password: str) -> str:
     """
-    Generate a secure but more readable password with mixed characters.
+    Hash password using bcrypt.
+    
+    Args:
+        password: Plain text password
+        
+    Returns:
+        Bcrypt hashed password
+    """
+    return pwd_context.hash(password)
+
+def generate_and_hash_password(length: int = 12) -> Tuple[str, str]:
+    """
+    Generate a strong password and return both plain and hashed versions.
     
     Args:
         length: Password length (default 12)
         
     Returns:
-        Secure random password with letters, digits, and symbols
+        Tuple of (plain_password, hashed_password)
     """
-    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
-    return ''.join(secrets.choice(alphabet) for _ in range(length))
+    plain_password = generate_strong_password(length)
+    hashed_password = hash_password(plain_password)
+    return plain_password, hashed_password
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verify a password against its hash.
+    
+    Args:
+        plain_password: Plain text password
+        hashed_password: Bcrypt hashed password
+        
+    Returns:
+        True if password matches, False otherwise
+    """
+    return pwd_context.verify(plain_password, hashed_password)

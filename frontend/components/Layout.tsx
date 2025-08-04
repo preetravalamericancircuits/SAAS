@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,16 +9,33 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <div className="container mx-auto px-6 py-8">
-            {children}
-          </div>
+    <ThemeProvider>
+      <div className="flex h-screen bg-light dark:bg-gray-900">
+        <Sidebar />
+        <main className="flex-1 ml-60 lg:ml-60 overflow-y-auto bg-light dark:bg-gray-900 transition-all duration-300">
+          {children}
         </main>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              style: {
+                background: '#10B981',
+              },
+            },
+            error: {
+              style: {
+                background: '#EF4444',
+              },
+            },
+          }}
+        />
       </div>
-    </div>
+    </ThemeProvider>
   );
 }

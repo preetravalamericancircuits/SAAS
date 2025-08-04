@@ -227,24 +227,21 @@ export default function SecureFilesPage() {
             </ul>
           </div>
 
-          {/* Security Notice */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <ShieldCheckIcon className="h-5 w-5 text-blue-400" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">Security Notice</h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>
+          <Card className="mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex">
+                <ShieldCheckIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Security Notice</h3>
+                  <p className="mt-2 text-sm text-blue-700 dark:text-blue-300">
                     These files contain confidential information. Please ensure you have proper authorization 
                     before accessing or downloading any documents. All access is logged and monitored.
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
+        </PageContainer>
       </Layout>
     </ProtectedRoute>
   );

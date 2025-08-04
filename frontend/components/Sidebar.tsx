@@ -1,5 +1,5 @@
-import { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UserCircleIcon, 
   HomeIcon,
@@ -9,15 +9,21 @@ import {
   DocumentTextIcon,
   ClipboardDocumentListIcon,
   LinkIcon,
-  ChevronDownIcon
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -70,104 +76,140 @@ export default function Sidebar() {
 
   const navigationItems = getNavigationItems();
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'SuperUser': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'Admin': return 'bg-red-100 text-red-800 border-red-200';
-      case 'Manager': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'ITRA': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Operator': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'User': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="flex flex-col w-64 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900">
-        {/* Logo */}
-        <div className="flex items-center justify-center h-16 px-4 bg-blue-950">
-          <Link href="/dashboard" className="text-xl font-bold text-white">
-            🔷 ACI Dashboard
-          </Link>
-        </div>
+    <motion.div 
+      initial={false}
+      animate={{ width: isCollapsed ? 60 : 240 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 z-40 flex flex-col"
+    >
+      {/* Header */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link href="/dashboard" className="text-lg font-bold text-gray-900 dark:text-white">
+                ACI Dashboard
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        </button>
+      </div>
 
-        {/* User Profile */}
-        <div className="flex flex-col items-center px-4 py-6 border-b border-blue-700">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-3">
-            <UserCircleIcon className="w-10 h-10 text-white" />
+      {/* User Profile */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <UserCircleIcon className="w-6 h-6 text-white" />
           </div>
-          <h3 className="text-white font-medium">{user?.username}</h3>
-          <p className="text-blue-200 text-sm">{user?.email}</p>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border mt-2 ${getRoleBadgeColor(user?.role || '')}`}>
-            {user?.role}
-          </span>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-4 space-y-2">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                item.current
-                  ? 'bg-blue-700 text-white shadow-lg'
-                  : 'text-blue-100 hover:bg-blue-700 hover:text-white'
-              }`}
-            >
-              <item.icon className="w-5 h-5 mr-3" />
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-
-        {/* User Menu */}
-        <div className="px-4 py-4 border-t border-blue-700">
-          <Menu as="div" className="relative">
-            <Menu.Button className="flex items-center w-full px-4 py-2 text-sm font-medium text-blue-100 rounded-lg hover:bg-blue-700 hover:text-white transition-colors">
-              <CogIcon className="w-5 h-5 mr-3" />
-              Account
-              <ChevronDownIcon className="w-4 h-4 ml-auto" />
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="#"
-                        className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                      >
-                        Profile Settings
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={handleLogout}
-                        className={`${active ? 'bg-gray-100' : ''} block w-full text-left px-4 py-2 text-sm text-gray-700`}
-                      >
-                        Sign Out
-                      </button>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.username}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.role}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {navigationItems.map((item) => (
+          <Link
+            key={item.name}
+            href={item.href}
+            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
+              item.current
+                ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+          >
+            <item.icon className={`w-5 h-5 flex-shrink-0 ${
+              item.current ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'
+            }`} />
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-sm font-medium overflow-hidden whitespace-nowrap"
+                >
+                  {item.name}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Link>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          {theme === 'light' ? (
+            <MoonIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          ) : (
+            <SunIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          )}
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm font-medium overflow-hidden whitespace-nowrap"
+              >
+                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+        >
+          <ArrowRightOnRectangleIcon className="w-5 h-5" />
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm font-medium overflow-hidden whitespace-nowrap"
+              >
+                Sign Out
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
+    </motion.div>
   );
 }

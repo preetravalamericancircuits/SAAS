@@ -15,7 +15,9 @@ from schemas import (
     RoleCreate, RoleResponse, RoleUpdate, PermissionCreate, PermissionResponse, PermissionUpdate,
     MessageResponse, UserCreateWithAutoPassword, UserCreateResponse, PersonCreateWithAutoPassword, PersonCreateResponse
 )
-from password_utils import generate_secure_password
+from password_utils import generate_and_hash_password, generate_strong_password
+from password_security import password_security_manager
+from password_audit_endpoint import router as password_audit_router
 from auth import (
     create_access_token, get_current_user, verify_password, get_password_hash,
     requires_role, requires_permission, requires_any_role, is_admin, get_user_permissions
@@ -30,6 +32,9 @@ app = FastAPI(
     description="Internal SaaS Application API with Role-Based Access Control",
     version="1.0.0"
 )
+
+# Include password audit router
+app.include_router(password_audit_router)
 
 # CORS middleware
 app.add_middleware(
@@ -49,6 +54,10 @@ async def root():
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow()}
+
+@app.get("/health")
+async def health_check_simple():
+    return {"status": "ok"}
 
 # Authentication endpoints
 @app.post("/api/auth/register", response_model=RegisterResponse)
@@ -311,24 +320,25 @@ async def create_user_with_auto_password(
             detail="Email already registered"
         )
     
-    # Generate secure password
-    raw_password = generate_secure_password(12)
-    hashed_password = get_password_hash(raw_password)
+    # Generate secure password with audit logging
+    password_data = password_security_manager.create_user_password(
+        username=user_data.username,
+        email=user_data.email,
+        created_by=current_user.username,
+        length=12
+    )
     
     # Create new user
     db_user = User(
         username=user_data.username,
         email=user_data.email,
-        hashed_password=hashed_password,
+        hashed_password=password_data['hashed_password'],
         role_id=user_data.role_id
     )
     
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    
-    # Log password creation for security audit
-    print(f"[SECURITY AUDIT] User created with auto-generated password. Username: {user_data.username}, Email: {user_data.email}, Created by: {current_user.username}")
     
     return UserCreateResponse(
         message=f"User {user_data.username} created successfully with auto-generated password",
@@ -341,7 +351,7 @@ async def create_user_with_auto_password(
             is_active=db_user.is_active,
             created_at=db_user.created_at
         ),
-        generated_password=raw_password  # Only returned once for security
+        generated_password=password_data['plain_password']  # Only returned once for security
     )
 
 @app.put("/api/users/{user_id}", response_model=UserResponse)
@@ -638,24 +648,25 @@ async def create_person_with_auto_password(
             detail="Email already registered"
         )
     
-    # Generate secure password
-    raw_password = generate_secure_password(12)
-    hashed_password = get_password_hash(raw_password)
+    # Generate secure password with audit logging
+    password_data = password_security_manager.create_user_password(
+        username=person_data.username,
+        email=person_data.email,
+        created_by=current_user.username,
+        length=12
+    )
     
     # Create new person
     db_person = Person(
         username=person_data.username,
         email=person_data.email,
-        hashed_password=hashed_password,
+        hashed_password=password_data['hashed_password'],
         role=person_data.role
     )
     
     db.add(db_person)
     db.commit()
     db.refresh(db_person)
-    
-    # Log password creation for security audit
-    print(f"[SECURITY AUDIT] Person created with auto-generated password. Username: {person_data.username}, Email: {person_data.email}, Role: {person_data.role.value}, Created by: {current_user.username}")
     
     return PersonCreateResponse(
         message=f"Person {person_data.username} created successfully with auto-generated password",
@@ -667,7 +678,7 @@ async def create_person_with_auto_password(
             is_active=db_person.is_active,
             created_at=db_person.created_at
         ),
-        generated_password=raw_password  # Only returned once for security
+        generated_password=password_data['plain_password']  # Only returned once for security
     )
 
 @app.get("/api/persons", response_model=List[PersonResponse])
