@@ -1,41 +1,26 @@
-import { ReactNode } from 'react';
-import Sidebar from './Sidebar';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { Toaster } from 'react-hot-toast';
+import Navigation from './Navigation';
+import TopNavbar from './TopNavbar';
 
 interface LayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <ThemeProvider>
-      <div className="flex h-screen bg-light dark:bg-gray-900">
-        <Sidebar />
-        <main className="flex-1 ml-60 lg:ml-60 overflow-y-auto bg-light dark:bg-gray-900 transition-all duration-300">
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Navigation />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Navbar */}
+        <TopNavbar />
+        
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
-              style: {
-                background: '#10B981',
-              },
-            },
-            error: {
-              style: {
-                background: '#EF4444',
-              },
-            },
-          }}
-        />
       </div>
-    </ThemeProvider>
+    </div>
   );
 }
