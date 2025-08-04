@@ -3,7 +3,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "sqlite:///./saas_app.db"
+    database_url: str = "postgresql://aci_user:aci_password@localhost:5432/aci_db"
     
     # Security
     secret_key: str = "your-secret-key-here-change-in-production"
@@ -19,5 +19,6 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings() 
