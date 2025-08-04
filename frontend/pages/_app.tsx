@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
 import NewLayout from '@/components/NewLayout';
@@ -34,6 +35,7 @@ export default function App(props: AppProps) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppContent {...props} />
+        <Toaster position="top-right" richColors />
       </AuthProvider>
     </QueryClientProvider>
   );

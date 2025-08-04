@@ -9,12 +9,19 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <Navigation />
+      <div className="hidden lg:block">
+        <Navigation />
+      </div>
+      <div className="lg:hidden">
+        <Navigation />
+      </div>
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Navbar */}
-        <TopNavbar />
+        <div className="pt-16 lg:pt-0">
+          <TopNavbar />
+        </div>
         
         {/* Page Content */}
         <main className="flex-1 overflow-auto">

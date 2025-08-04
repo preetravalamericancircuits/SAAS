@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MoreHorizontal, Edit, Trash2, Calendar, User } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import { motion } from 'framer-motion';
 
 interface Task {
   id: number;
@@ -87,6 +88,73 @@ export default function TaskTable({ tasks, onUpdate }: TaskTableProps) {
 
   return (
     <div className="overflow-x-auto">
+      {/* Mobile Card Layout */}
+      <div className="block md:hidden space-y-4 p-4">
+        {sortedTasks.map((task, index) => (
+          <motion.div
+            key={task.id}
+            className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-medium text-gray-900">{task.title}</div>
+              <Menu as="div" className="relative">
+                <Menu.Button className="p-2 rounded-full hover:bg-gray-100">
+                  <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                </Menu.Button>
+                <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700`}>
+                        <Edit className="w-4 h-4 mr-3" />Edit Task
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className={`${active ? 'bg-gray-100' : ''} flex items-center w-full px-4 py-2 text-sm text-red-600`}
+                      >
+                        <Trash2 className="w-4 h-4 mr-3" />Delete Task
+                      </button>
+                    )}
+                  </Menu.Item>
+                </Menu.Items>
+              </Menu>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-gray-500">Description:</span> {task.description}</div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <span className="text-gray-500 mr-2">Status:</span>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(task.status)}`}>
+                    {task.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-500 mr-2">Priority:</span>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityBadgeColor(task.priority)}`}>
+                    {task.priority}
+                  </span>
+                </div>
+              </div>
+              <div><span className="text-gray-500">Assignee:</span> {task.assignee}</div>
+              <div>
+                <span className="text-gray-500">Deadline:</span>
+                <span className={`ml-1 ${isOverdue(task.deadline) ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
+                  {formatDate(task.deadline)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop Table Layout */}
+      <div className="hidden md:block">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -217,6 +285,7 @@ export default function TaskTable({ tasks, onUpdate }: TaskTableProps) {
           ))}
         </tbody>
       </table>
+      </div>
       
       {sortedTasks.length === 0 && (
         <div className="text-center py-12">

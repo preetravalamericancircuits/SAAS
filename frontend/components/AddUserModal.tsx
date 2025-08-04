@@ -1,6 +1,10 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { X, User, Mail, Lock, Shield } from 'lucide-react';
 
 interface AddUserModalProps {
@@ -9,21 +13,27 @@ interface AddUserModalProps {
   onSuccess: () => void;
 }
 
-interface UserFormData {
-  username: string;
-  email: string;
-  password: string;
-  confirm_password: string;
-  role: string;
-  full_name?: string;
-}
+const userSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirm_password: z.string(),
+  role: z.string().min(1, 'Role is required'),
+  full_name: z.string().optional()
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ["confirm_password"],
+});
+
+type UserFormData = z.infer<typeof userSchema>;
 
 export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<UserFormData>();
-  const password = watch('password');
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<UserFormData>({
+    resolver: zodResolver(userSchema)
+  });
 
   const roles = ['User', 'Admin', 'Manager', 'SuperUser', 'ITRA', 'Operator'];
 
@@ -42,14 +52,19 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
       });
 
       if (response.ok) {
+        toast.success('User created successfully!');
         reset();
         onSuccess();
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create user');
+        const errorMsg = errorData.detail || 'Failed to create user';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError('Network error occurred');
+      const errorMsg = 'Network error occurred';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +102,13 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 shadow-xl transition-all">
+              <Dialog.Panel 
+                as={motion.div}
+                className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 shadow-xl transition-all"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <Dialog.Title className="text-lg font-semibold text-blue-900">
                     Add New User
@@ -238,13 +259,15 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                     >
                       Cancel
                     </button>
-                    <button
+                    <motion.button
                       type="submit"
                       disabled={isSubmitting}
                       className="px-4 py-2 text-sm font-medium text-white bg-blue-900 rounded-md hover:bg-blue-800 disabled:opacity-50"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       {isSubmitting ? 'Creating...' : 'Create User'}
-                    </button>
+                    </motion.button>
                   </div>
                 </form>
               </Dialog.Panel>

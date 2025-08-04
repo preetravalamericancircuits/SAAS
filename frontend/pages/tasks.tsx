@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import Layout from '@/components/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import TaskTable from '@/components/TaskTable';
 import AddTaskModal from '@/components/AddTaskModal';
 import { Plus } from 'lucide-react';
@@ -13,7 +14,8 @@ export default function TasksPage() {
   const { data: tasks, error, mutate } = useSWR('/api/tasks', fetcher);
 
   return (
-    <Layout>
+    <ProtectedRoute allowedRoles={['SuperUser', 'Admin']}>
+      <Layout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -42,6 +44,7 @@ export default function TasksPage() {
           }}
         />
       </div>
-    </Layout>
+      </Layout>
+    </ProtectedRoute>
   );
 }

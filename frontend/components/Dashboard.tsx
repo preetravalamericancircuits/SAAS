@@ -1,8 +1,10 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
 import { Users, CheckSquare, Activity, TrendingUp } from 'lucide-react';
+import { CardSkeleton } from './Skeleton';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const overviewCards = [
     {
@@ -35,20 +37,53 @@ export default function Dashboard() {
     }
   ];
 
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="mb-8">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-64 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <motion.div 
+      className="p-6 bg-gray-50 min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Header */}
-      <div className="mb-8">
+      <motion.div 
+        className="mb-8"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
         <h1 className="text-3xl font-bold text-blue-900">Dashboard</h1>
         <p className="text-gray-600 mt-2">Welcome back, {user?.username}</p>
-      </div>
+      </motion.div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {overviewCards.map((card) => {
+        {overviewCards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <div key={card.title} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+            <motion.div 
+              key={card.title} 
+              className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 + index * 0.1 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">{card.title}</p>
@@ -61,50 +96,76 @@ export default function Dashboard() {
                     {card.change}
                   </p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
+                <motion.div 
+                  className="p-3 bg-blue-100 rounded-lg"
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                >
                   <Icon className="w-6 h-6 text-blue-600" />
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Additional Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <motion.div 
+          className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Recent Activity</h3>
           <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">New user registered - 2 hours ago</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">Task completed - 4 hours ago</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">System maintenance - 1 day ago</span>
-            </div>
+            {[
+              { color: 'bg-green-500', text: 'New user registered - 2 hours ago' },
+              { color: 'bg-blue-500', text: 'Task completed - 4 hours ago' },
+              { color: 'bg-yellow-500', text: 'System maintenance - 1 day ago' }
+            ].map((item, index) => (
+              <motion.div 
+                key={index}
+                className="flex items-center space-x-3"
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+              >
+                <div className={`w-2 h-2 ${item.color} rounded-full`}></div>
+                <span className="text-sm text-gray-600">{item.text}</span>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <motion.div 
+          className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-900">Create New Task</span>
-            </button>
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-900">Manage Users</span>
-            </button>
-            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <span className="text-sm font-medium text-gray-900">View Reports</span>
-            </button>
+            {[
+              'Create New Task',
+              'Manage Users',
+              'View Reports'
+            ].map((action, index) => (
+              <motion.button 
+                key={action}
+                className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="text-sm font-medium text-gray-900">{action}</span>
+              </motion.button>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

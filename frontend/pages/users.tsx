@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import useSWR from 'swr';
+import { Toaster } from 'sonner';
 import Layout from '@/components/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import UserTable from '@/components/UserTable';
 import AddUserModal from '@/components/AddUserModal';
 import { Plus, Filter } from 'lucide-react';
@@ -11,7 +13,7 @@ export default function UsersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState('all');
   
-  const { data: users, error, mutate } = useSWR('/api/users', fetcher);
+  const { data: users, error, mutate, isLoading } = useSWR('/api/users', fetcher);
 
   const filteredUsers = users?.filter((user: any) => 
     roleFilter === 'all' || user.role === roleFilter
@@ -20,7 +22,8 @@ export default function UsersPage() {
   const roles = ['all', 'SuperUser', 'Admin', 'User', 'Manager', 'ITRA', 'Operator'];
 
   return (
-    <Layout>
+    <ProtectedRoute allowedRoles={['SuperUser', 'Admin']}>
+      <Layout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -57,7 +60,7 @@ export default function UsersPage() {
             </div>
           </div>
 
-          <UserTable users={filteredUsers} onUpdate={mutate} />
+          <UserTable users={filteredUsers} onUpdate={mutate} loading={isLoading} />
         </div>
 
         <AddUserModal
@@ -68,7 +71,9 @@ export default function UsersPage() {
             setIsAddModalOpen(false);
           }}
         />
+        <Toaster position="top-right" />
       </div>
-    </Layout>
+      </Layout>
+    </ProtectedRoute>
   );
 }

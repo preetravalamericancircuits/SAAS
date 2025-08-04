@@ -1,6 +1,10 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { X, CheckSquare, User, Calendar, AlertCircle } from 'lucide-react';
 
 interface AddTaskModalProps {
@@ -9,20 +13,24 @@ interface AddTaskModalProps {
   onSuccess: () => void;
 }
 
-interface TaskFormData {
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  deadline: string;
-  assignee: string;
-}
+const taskSchema = z.object({
+  title: z.string().min(1, 'Task title is required'),
+  description: z.string().optional(),
+  status: z.string().min(1, 'Status is required'),
+  priority: z.string().min(1, 'Priority is required'),
+  deadline: z.string().min(1, 'Deadline is required'),
+  assignee: z.string().min(1, 'Assignee is required')
+});
+
+type TaskFormData = z.infer<typeof taskSchema>;
 
 export default function AddTaskModal({ isOpen, onClose, onSuccess }: AddTaskModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>({
+    resolver: zodResolver(taskSchema)
+  });
 
   const statuses = ['pending', 'in_progress', 'completed', 'cancelled'];
   const priorities = ['low', 'medium', 'high'];
@@ -42,14 +50,19 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: AddTaskModa
       });
 
       if (response.ok) {
+        toast.success('Task created successfully!');
         reset();
         onSuccess();
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create task');
+        const errorMsg = errorData.detail || 'Failed to create task';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError('Network error occurred');
+      const errorMsg = 'Network error occurred';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +100,13 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: AddTaskModa
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 shadow-xl transition-all">
+              <Dialog.Panel 
+                as={motion.div}
+                className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 shadow-xl transition-all"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <Dialog.Title className="text-lg font-semibold text-blue-900">
                     Add New Task

@@ -4,114 +4,54 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: string[];
-  requiredPermissions?: string[];
+  allowedRoles?: string[];
   redirectTo?: string;
 }
 
 export default function ProtectedRoute({ 
   children, 
-  requiredRoles = [], 
-  requiredPermissions = [],
-  redirectTo = '/login'
+  allowedRoles = [], 
+  redirectTo = '/dashboard' 
 }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push(redirectTo);
+    if (!loading) {
+      // Redirect to login if not authenticated
+      if (!user) {
+        router.push('/login');
         return;
       }
 
-      // Check role requirements
-      if (requiredRoles.length > 0 && user) {
-        const hasRequiredRole = requiredRoles.includes(user.role);
-        if (!hasRequiredRole) {
-          router.push('/dashboard?error=insufficient_permissions');
-          return;
-        }
-      }
-
-      // Check permission requirements
-      if (requiredPermissions.length > 0 && user) {
-        const hasRequiredPermissions = requiredPermissions.every(permission => 
-          user.permissions.includes(permission)
-        );
-        if (!hasRequiredPermissions) {
-          router.push('/dashboard?error=insufficient_permissions');
-          return;
-        }
+      // Check role-based access
+      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+        router.push(redirectTo);
+        return;
       }
     }
-  }, [isAuthenticated, isLoading, user, requiredRoles, requiredPermissions, router, redirectTo]);
+  }, [user, loading, router, allowedRoles, redirectTo]);
 
-  if (isLoading) {
+  // Show loading or nothing while checking auth
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // Check role requirements
-  if (requiredRoles.length > 0 && user) {
-    const hasRequiredRole = requiredRoles.includes(user.role);
-    if (!hasRequiredRole) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-            <p className="text-gray-600 mb-4">
-              You don't have the required role to access this page.
-            </p>
-            <p className="text-sm text-gray-500">
-              Required roles: {requiredRoles.join(', ')}
-            </p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
-            >
-              Go to Dashboard
-            </button>
-          </div>
+  // Check role access
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">You don't have permission to access this page.</p>
         </div>
-      );
-    }
-  }
-
-  // Check permission requirements
-  if (requiredPermissions.length > 0 && user) {
-    const hasRequiredPermissions = requiredPermissions.every(permission => 
-      user.permissions.includes(permission)
+      </div>
     );
-    if (!hasRequiredPermissions) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-            <p className="text-gray-600 mb-4">
-              You don't have the required permissions to access this page.
-            </p>
-            <p className="text-sm text-gray-500">
-              Required permissions: {requiredPermissions.join(', ')}
-            </p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      );
-    }
   }
 
   return <>{children}</>;
-} 
+}
