@@ -1,0 +1,107 @@
+networks:
+  saas_network:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.25.0.0/16
+services:
+  backend:
+    container_name: saas_backend
+    depends_on:
+    - postgres
+    environment:
+      DATABASE_URL: postgresql://aci_user:aci_password@postgres:5432/aci_db
+    healthcheck:
+      interval: 30s
+      retries: 3
+      test:
+      - CMD-SHELL
+      - curl -f http://localhost:8000/api/health
+      timeout: 10s
+    image: saas_backend:latest
+    networks:
+    - saas_network
+    ports:
+    - 8000:8000
+    restart: unless-stopped
+    volumes:
+    - ./backend:/app
+  frontend:
+    container_name: saas_frontend
+    depends_on:
+    - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    healthcheck:
+      interval: 30s
+      retries: 3
+      test:
+      - CMD-SHELL
+      - curl -f http://localhost:3000
+      timeout: 10s
+    image: saas_frontend:latest
+    networks:
+    - saas_network
+    ports:
+    - 3000:3000
+    restart: unless-stopped
+    volumes:
+    - ./frontend:/app
+  nginx:
+    container_name: saas_nginx
+    depends_on:
+    - frontend
+    - backend
+    environment: {}
+    image: nginx:alpine
+    networks:
+    - saas_network
+    ports:
+    - 80:80
+    - 443:443
+    restart: unless-stopped
+    volumes:
+    - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  postgres:
+    container_name: saas_postgres
+    environment:
+      POSTGRES_DB: aci_db
+      POSTGRES_PASSWORD: aci_password
+      POSTGRES_USER: aci_user
+    healthcheck:
+      interval: 10s
+      retries: 5
+      test:
+      - CMD-SHELL
+      - pg_isready -U aci_user -d aci_db
+      timeout: 5s
+    image: postgres:15-alpine
+    networks:
+    - saas_network
+    ports:
+    - 5432:5432
+    restart: unless-stopped
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+  redis:
+    container_name: saas_redis
+    environment: {}
+    image: redis:7-alpine
+    networks:
+    - saas_network
+    ports:
+    - 6379:6379
+    restart: unless-stopped
+    volumes:
+    - redis_data:/data
+volumes:
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
