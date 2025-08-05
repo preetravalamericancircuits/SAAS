@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "analyze": "cross-env ANALYZE=true npm run build",
+    "analyze:server": "cross-env ANALYZE=true npm run build && npm run start"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -36,6 +38,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.4.5",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.5.1",

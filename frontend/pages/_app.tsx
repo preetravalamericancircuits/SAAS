@@ -5,6 +5,21 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
+import { Inter, Roboto } from 'next/font/google';
+
+// Optimize Google Fonts with next/font
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  variable: '--font-roboto',
+  display: 'swap',
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,12 +46,18 @@ function AppContent({ Component, pageProps }: AppProps) {
 }
 
 export default function App(props: AppProps) {
+  const { Component, pageProps } = props;
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent {...props} />
-        <Toaster position="top-right" richColors />
+        <ErrorBoundary>
+          <main className={`${inter.variable} ${roboto.variable} font-sans`}>
+            <AppContent {...props} />
+            <Toaster position="top-right" richColors />
+          </main>
+        </ErrorBoundary>
       </AuthProvider>
     </QueryClientProvider>
   );
-} 
+}
