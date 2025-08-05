@@ -14,7 +14,9 @@ export default function Analytics() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.json`;
+        const dateStr = new Date().toISOString();
+        const datePart = dateStr ? dateStr.split('T')[0] : 'unknown-date';
+        a.download = `analytics-report-${datePart}.json`;
         a.click();
         break;
       case 'Export Data':
@@ -23,7 +25,9 @@ export default function Analytics() {
         const csvUrl = URL.createObjectURL(csvBlob);
         const csvLink = document.createElement('a');
         csvLink.href = csvUrl;
-        csvLink.download = `analytics-data-${new Date().toISOString().split('T')[0]}.csv`;
+        const csvDateStr = new Date().toISOString();
+        const csvDatePart = csvDateStr ? csvDateStr.split('T')[0] : 'unknown-date';
+        csvLink.download = `analytics-data-${csvDatePart}.csv`;
         csvLink.click();
         break;
       default:
