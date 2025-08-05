@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: saas-postgres-ssl
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - saas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: saas-backend-ssl
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS}
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - ALLOWED_ORIGINS=["https://yourdomain.com","https://www.yourdomain.com","https://api.yourdomain.com"]
+    volumes:
+      - ./backend/logs:/app/logs
+      - ssl_secrets:/app/secrets:ro
+    networks:
+      - saas-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: saas-frontend-ssl
+    environment:
+      - NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+      - NODE_ENV=production
+    networks:
+      - saas-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx with SSL
+  nginx-ssl:
+    image: nginx:alpine
+    container_name: saas-nginx-ssl
+    volumes:
+      - ./config/nginx/nginx.ssl.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/security-headers.conf:/etc/nginx/conf.d/security-headers.conf:ro
+      - ./config/nginx/auth-security.conf:/etc/nginx/conf.d/auth-security.conf:ro
+      - ./config/nginx/secure-files.conf:/etc/nginx/conf.d/secure-files.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/nginx/ssl:/etc/nginx/ssl:ro
+      - ssl_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - saas-network
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Certbot for SSL renewal
+  certbot:
+    image: certbot/certbot
+    container_name: saas-certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+      - ./scripts:/scripts:ro
+    command: /bin/sh -c "trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  ssl_logs:
+    driver: local
+  ssl_secrets:
+    driver: local
+
+networks:
+  saas-network:
+    driver: bridge

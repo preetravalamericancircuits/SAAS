@@ -13,8 +13,10 @@ from cors_security import get_cors_config, SecureCORSMiddleware
 from logging_config import setup_logging
 from middleware.logging_middleware import LoggingMiddleware
 from middleware.security_middleware import SecurityMiddleware
+from middleware.security_headers import SecurityHeadersMiddleware
 from rate_limiter import check_auth_rate_limit, check_login_rate_limit, rate_limiter
 from security_monitor import security_monitor
+from csrf_protection import init_csrf_protection, require_csrf_protection, csrf_protection
 
 from database import get_db, engine
 from models import Base, User, Role, Permission, Person, PersonRole
@@ -37,6 +39,9 @@ from config import settings
 setup_logging()
 logger = logging.getLogger(__name__)
 
+# Initialize CSRF protection
+init_csrf_protection(settings.secret_key)
+
 # Create database tables (if they don't exist)
 try:
     Base.metadata.create_all(bind=engine)
@@ -51,10 +56,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Include API routers
+from api.v1.router import v1_router
+from api.versioning import version_router
+app.include_router(v1_router, prefix="/api")
+app.include_router(version_router, prefix="/api", tags=["API Info"])
+
 # Include password audit router
 app.include_router(password_audit_router)
 
 # Add security and logging middleware
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(LoggingMiddleware)
 
@@ -111,138 +123,22 @@ async def health_check_simple():
     return {"status": "ok"}
 
 # Authentication endpoints
-@app.post("/api/auth/register", response_model=RegisterResponse)
-async def register(register_data: RegisterRequest, request: Request, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit)):
-    """Register a new user"""
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.username == register_data.username).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
-        )
-    
-    existing_email = db.query(User).filter(User.email == register_data.email).first()
-    if existing_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
-    
-    # Create new user with default role (if available)
-    hashed_password = get_password_hash(register_data.password)
-    db_user = User(
-        username=register_data.username,
-        email=register_data.email,
-        hashed_password=hashed_password,
-        is_active=True
-    )
-    
-    # Assign default role (User role)
-    default_role = db.query(Role).filter(Role.name == "User").first()
-    if default_role:
-        db_user.role_id = default_role.id
-    
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    
-    return RegisterResponse(
-        message="User registered successfully",
-        user=UserResponse(
-            id=db_user.id,
-            username=db_user.username,
-            email=db_user.email,
-            role=db_user.role.name if db_user.role else None,
-            permissions=get_user_permissions(db_user),
-            is_active=db_user.is_active,
-            created_at=db_user.created_at
-        )
-    )
+# Legacy auth endpoints (deprecated - use /api/v1/auth instead)
+@app.post("/api/auth/register", response_model=RegisterResponse, deprecated=True)
+async def register_legacy(register_data: RegisterRequest, request: Request, db: Session = Depends(get_db), _csrf: None = Depends(require_csrf_protection)):
+    """Legacy register endpoint - use /api/v1/auth/register instead"""
+    from api.v1.auth import register
+    return await register(register_data, request, db, None)
 
-@app.post("/api/auth/login", response_model=LoginResponse)
-async def login(login_data: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db), _: None = Depends(check_login_rate_limit)):
-    """Login user and return JWT token with HTTP-only cookie"""
-    logger.info("Login attempt", extra={
-        "username": login_data.username,
-        "request_id": getattr(request.state, 'request_id', None),
-        "ip_address": request.client.host if request.client else "unknown"
-    })
-    
-    user = db.query(User).filter(User.username == login_data.username).first()
-    if not user or not verify_password(login_data.password, user.hashed_password):
-        # Record failed attempt for brute force protection
-        client_ip = request.client.host if request.client else "unknown"
-        rate_limiter.record_failed_login(request, login_data.username)
-        security_monitor.log_failed_login(client_ip, login_data.username)
-        
-        logger.warning("Failed login attempt", extra={
-            "username": login_data.username,
-            "request_id": getattr(request.state, 'request_id', None),
-            "ip_address": client_ip
-        })
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is deactivated"
-        )
-    
-    access_token = create_access_token(data={"sub": user.username})
-    refresh_token = create_refresh_token(data={"sub": user.username})
-    
-    # Set HTTP-only cookies
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=settings.access_token_expire_minutes * 60
-    )
-    
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=settings.refresh_token_expire_days * 24 * 60 * 60
-    )
-    
-    # Clear failed attempts on successful login
-    client_ip = request.client.host if request.client else "unknown"
-    rate_limiter.clear_failed_attempts(request, login_data.username)
-    security_monitor.log_successful_login(client_ip, login_data.username)
-    
-    logger.info("Successful login", extra={
-        "user_id": user.id,
-        "username": user.username,
-        "role": user.role.name if user.role else None,
-        "request_id": getattr(request.state, 'request_id', None)
-    })
-    
-    return LoginResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user=UserResponse(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            role=user.role.name if user.role else None,
-            permissions=get_user_permissions(user),
-            is_active=user.is_active,
-            created_at=user.created_at
-        )
-    )
+@app.post("/api/auth/login", response_model=LoginResponse, deprecated=True)
+async def login_legacy(login_data: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db), _csrf: None = Depends(require_csrf_protection)):
+    """Legacy login endpoint - use /api/v1/auth/login instead"""
+    from api.v1.auth import login
+    return await login(login_data, response, request, db, None)
 
-@app.get("/api/auth/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user information"""
+@app.get("/api/auth/me", response_model=UserResponse, deprecated=True)
+async def get_current_user_info_legacy(current_user: User = Depends(get_current_user)):
+    """Legacy user info endpoint - use /api/v1/auth/me instead"""
     return UserResponse(
         id=current_user.id,
         username=current_user.username,
@@ -253,73 +149,17 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         created_at=current_user.created_at
     )
 
-@app.post("/api/auth/logout")
-async def logout(response: Response):
-    """Logout user (clear cookies)"""
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="refresh_token")
-    return {"message": "Successfully logged out"}
+@app.post("/api/auth/logout", deprecated=True)
+async def logout_legacy(response: Response, request: Request, _csrf: None = Depends(require_csrf_protection)):
+    """Legacy logout endpoint - use /api/v1/auth/logout instead"""
+    from api.v1.auth import logout
+    return await logout(response)
 
-@app.post("/api/auth/refresh", response_model=LoginResponse)
-async def refresh_token(request: Request, response: Response, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit)):
-    """Refresh access token using refresh token"""
-    refresh_token = request.cookies.get("refresh_token")
-    if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token not found"
-        )
-    
-    username = verify_token(refresh_token, "refresh")
-    if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
-        )
-    
-    user = db.query(User).filter(User.username == username).first()
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive"
-        )
-    
-    # Create new tokens
-    new_access_token = create_access_token(data={"sub": user.username})
-    new_refresh_token = create_refresh_token(data={"sub": user.username})
-    
-    # Set new HTTP-only cookies
-    response.set_cookie(
-        key="access_token",
-        value=new_access_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=settings.access_token_expire_minutes * 60
-    )
-    
-    response.set_cookie(
-        key="refresh_token",
-        value=new_refresh_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=settings.refresh_token_expire_days * 24 * 60 * 60
-    )
-    
-    return LoginResponse(
-        access_token=new_access_token,
-        token_type="bearer",
-        user=UserResponse(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            role=user.role.name if user.role else None,
-            permissions=get_user_permissions(user),
-            is_active=user.is_active,
-            created_at=user.created_at
-        )
-    )
+@app.post("/api/auth/refresh", response_model=LoginResponse, deprecated=True)
+async def refresh_token_legacy(request: Request, response: Response, db: Session = Depends(get_db), _csrf: None = Depends(require_csrf_protection)):
+    """Legacy refresh endpoint - use /api/v1/auth/refresh instead"""
+    from api.v1.auth import refresh_token
+    return await refresh_token(request, response, db, None)
 
 # Secure Files endpoint (ITRA only)
 @app.get("/api/secure-files", response_model=dict)

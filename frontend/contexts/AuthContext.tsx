@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { makeSecureRequest, clearCSRFToken } from '@/lib/csrf';
 
 interface User {
   id: number;
@@ -46,10 +47,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        withCredentials: true
-      });
-      setUser(response.data);
+      const response = await makeSecureRequest(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/me/`);
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
     } catch (error) {
       console.log('Not authenticated');
       setUser(null);
@@ -60,30 +64,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        username,
-        password
-      }, {
-        withCredentials: true
+      const response = await makeSecureRequest(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        body: JSON.stringify({ username, password })
       });
       
-      const { user: userData } = response.data;
-      setUser(userData);
-      return true;
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        return true;
+      }
+      return false;
     } catch (error: any) {
-      console.error('Login error:', error.response?.data || error.message);
+      console.error('Login error:', error);
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {}, {
-        withCredentials: true
+      await makeSecureRequest(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/logout`, {
+        method: 'POST'
       });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      clearCSRFToken();
       setUser(null);
     }
   };
