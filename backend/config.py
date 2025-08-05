@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     log_file_max_size: int = 10485760  # 10MB
     log_file_backup_count: int = 5
     
+    # Sentry
+    sentry_dsn: str = ""
+    app_version: str = "1.0.0"
+    
     # CORS Configuration
     allowed_origins: list = ["http://localhost:3000", "http://frontend:3000"]
     allowed_methods: list = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]

@@ -1,161 +1,70 @@
-import { BarChart3, Download, Eye, TrendingUp } from 'lucide-react';
-import { ModernCard, ModernButton, ModernPageHeader, ModernStatsCard } from '@/components/ui/modern-components';
+import React, { useState, useEffect } from 'react';
+import { NextPage } from 'next';
+import dynamic from 'next/dynamic';
 
-export default function Analytics() {
-  const handleButtonClick = (action: string) => {
-    switch(action) {
-      case 'Generate Report':
-        const reportData = {
-          type: 'Analytics Report',
-          date: new Date().toISOString(),
-          data: analyticsStats
-        };
-        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const dateStr = new Date().toISOString();
-        const datePart = dateStr ? dateStr.split('T')[0] : 'unknown-date';
-        a.download = `analytics-report-${datePart}.json`;
-        a.click();
-        break;
-      case 'Export Data':
-        const csvData = analyticsStats.map(stat => `${stat.name},${stat.value}`).join('\n');
-        const csvBlob = new Blob([`Name,Value\n${csvData}`], { type: 'text/csv' });
-        const csvUrl = URL.createObjectURL(csvBlob);
-        const csvLink = document.createElement('a');
-        csvLink.href = csvUrl;
-        const csvDateStr = new Date().toISOString();
-        const csvDatePart = csvDateStr ? csvDateStr.split('T')[0] : 'unknown-date';
-        csvLink.download = `analytics-data-${csvDatePart}.csv`;
-        csvLink.click();
-        break;
-      default:
-        alert(`${action} functionality implemented!`);
-    }
-  };
+// Dynamically import large dashboard components
+const DashboardStats = dynamic(() => import('../components/DashboardStats'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>,
+  ssr: false
+});
 
-  const analyticsStats = [
-    { name: 'Page Views', value: '45,231', icon: Eye, color: 'bg-blue-600', trend: { value: '+15%', isPositive: true } },
-    { name: 'Conversion Rate', value: '3.24%', icon: TrendingUp, color: 'bg-green-600', trend: { value: '+0.5%', isPositive: true } },
-    { name: 'Bounce Rate', value: '42.1%', icon: BarChart3, color: 'bg-yellow-600', trend: { value: '-2.3%', isPositive: true } },
-    { name: 'Revenue', value: '$12,450', icon: Download, color: 'bg-purple-600', trend: { value: '+8%', isPositive: true } }
-  ];
+const AnalyticsChart = dynamic(() => import('../components/AnalyticsChart'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>,
+  ssr: false
+});
+
+const AnalyticsPage: NextPage = () => {
+  const [featureFlags, setFeatureFlags] = useState({
+    advancedAnalytics: false,
+    realTimeUpdates: true,
+    exportEnabled: true
+  });
+
+  useEffect(() => {
+    // Load feature flags from configuration
+    const loadFeatureFlags = async () => {
+      try {
+        const response = await fetch('/api/feature-flags');
+        const flags = await response.json();
+        setFeatureFlags(flags);
+      } catch (error) {
+        console.error('Failed to load feature flags:', error);
+      }
+    };
+    loadFeatureFlags();
+  }, []);
 
   return (
-    <div className="space-y-8 p-6">
-      <ModernPageHeader 
-        title="Analytics" 
-        description="Comprehensive analytics dashboard with real-time metrics, user behavior insights, and performance tracking"
-        action={
-          <ModernButton onClick={() => handleButtonClick('Refresh Data')}>
-            Refresh Data
-          </ModernButton>
-        }
-      />
-      
-      {/* Analytics Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {analyticsStats.map((stat) => (
-          <ModernStatsCard
-            key={stat.name}
-            title={stat.name}
-            value={stat.value}
-            icon={stat.icon}
-            color={stat.color}
-            trend={stat.trend}
-          />
-        ))}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Analytics Dashboard</h1>
+          
+          {featureFlags.advancedAnalytics && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Advanced Analytics</h2>
+              <DashboardStats />
+            </div>
+          )}
+          
+          {featureFlags.realTimeUpdates && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Real-time Updates</h2>
+              <AnalyticsChart />
+            </div>
+          )}
+          
+          {featureFlags.exportEnabled && (
+            <div className="mt-8">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                Export Data
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      
-      {/* Analytics Actions */}
-      <ModernCard className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Analytics Tools</h2>
-        <p className="text-gray-600 mb-6">Generate reports and export your analytics data</p>
-        
-        <div className="flex flex-wrap gap-4">
-          <ModernButton
-            onClick={() => handleButtonClick('Generate Report')}
-            variant="primary"
-          >
-            Generate Report
-          </ModernButton>
-          <ModernButton
-            onClick={() => handleButtonClick('Export Data')}
-            variant="secondary"
-          >
-            Export Data
-          </ModernButton>
-          <ModernButton
-            onClick={() => handleButtonClick('View Charts')}
-            variant="outline"
-          >
-            View Charts
-          </ModernButton>
-          <ModernButton
-            onClick={() => handleButtonClick('Schedule Report')}
-            variant="ghost"
-          >
-            Schedule Report
-          </ModernButton>
-        </div>
-      </ModernCard>
-      
-      {/* Detailed Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ModernCard className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Overview</h2>
-            <div className="h-64 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="h-16 w-16 text-blue-400 mx-auto mb-4" />
-                <p className="text-gray-600">Interactive charts showing traffic trends, conversion rates, and user engagement metrics</p>
-              </div>
-            </div>
-          </ModernCard>
-        </div>
-        
-        <ModernCard className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Top Pages</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">/dashboard</span>
-              <span className="text-sm font-medium text-gray-900">12,450 views</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">/analytics</span>
-              <span className="text-sm font-medium text-gray-900">8,230 views</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">/users</span>
-              <span className="text-sm font-medium text-gray-900">5,670 views</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">/reports</span>
-              <span className="text-sm font-medium text-gray-900">4,120 views</span>
-            </div>
-          </div>
-        </ModernCard>
-      </div>
-      
-      {/* User Behavior */}
-      <ModernCard className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">User Behavior Analysis</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">2.5 min</div>
-            <div className="text-sm text-gray-600">Average Session Duration</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">4.2</div>
-            <div className="text-sm text-gray-600">Pages per Session</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">68%</div>
-            <div className="text-sm text-gray-600">Returning Visitors</div>
-          </div>
-        </div>
-      </ModernCard>
     </div>
   );
-}
+};
+
+export default AnalyticsPage;

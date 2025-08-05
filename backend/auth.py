@@ -9,6 +9,10 @@ from functools import wraps
 from database import get_db
 from models import User, Role, Permission
 from config import settings
+from jwt_utils import jwt_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -23,37 +27,20 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
-    
-    to_encode.update({"exp": expire, "type": "access"})
-    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
-    return encoded_jwt
+    """Create access token using JWT manager"""
+    return jwt_manager.create_token(data, "access", expires_delta)
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days)
-    
-    to_encode.update({"exp": expire, "type": "refresh"})
-    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
-    return encoded_jwt
+    """Create refresh token using JWT manager"""
+    return jwt_manager.create_token(data, "refresh", expires_delta)
 
 def verify_token(token: str, token_type: str = "access") -> Optional[str]:
+    """Verify token using JWT manager"""
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        username: str = payload.get("sub")
-        token_type_claim: str = payload.get("type")
-        
-        if username is None or token_type_claim != token_type:
-            return None
-        return username
-    except JWTError:
+        payload = jwt_manager.validate_token(token, token_type)
+        return payload.get("sub")
+    except JWTError as e:
+        logger.warning(f"Token verification failed: {e}")
         return None
 
 def get_current_user(
@@ -61,8 +48,8 @@ def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     """
-    Extract JWT token from HTTP-only cookie (access_token) and validate user.
-    This is the primary authentication method for the web application.
+    Get current user from validated JWT token.
+    Token validation is handled by JWT middleware.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -70,21 +57,21 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    # Get token from HTTP-only cookie
-    token = request.cookies.get("access_token")
-    if not token:
-        raise credentials_exception
-    
-    try:
-        # Validate JWT using secret key from environment variables
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        username: str = payload.get("sub")
-        token_type: str = payload.get("type")
+    # Get username from validated JWT payload (set by middleware)
+    username = getattr(request.state, 'username', None)
+    if not username:
+        # Fallback to manual token validation if middleware didn't run
+        token = request.cookies.get("access_token")
+        if not token:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
         
-        if username is None or token_type != "access":
+        if token:
+            username = verify_token(token, "access")
+        
+        if not username:
             raise credentials_exception
-    except JWTError:
-        raise credentials_exception
     
     # Extract user from database using username from token
     user = db.query(User).filter(User.username == username).first()

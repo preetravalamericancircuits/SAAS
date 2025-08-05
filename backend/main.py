@@ -14,9 +14,17 @@ from logging_config import setup_logging
 from middleware.logging_middleware import LoggingMiddleware
 from middleware.security_middleware import SecurityMiddleware
 from middleware.security_headers import SecurityHeadersMiddleware
+from middleware.jwt_middleware import JWTValidationMiddleware
+from middleware.sentry_middleware import SentryContextMiddleware
 from rate_limiter import check_auth_rate_limit, check_login_rate_limit, rate_limiter
 from security_monitor import security_monitor
 from csrf_protection import init_csrf_protection, require_csrf_protection, csrf_protection
+from slowapi_limiter import limiter, rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from sentry_config import init_sentry, capture_api_error
+from telemetry import init_telemetry, record_request, record_auth_attempt, record_active_user
+import sentry_sdk
+import time
 
 from database import get_db, engine
 from models import Base, User, Role, Permission, Person, PersonRole
@@ -39,8 +47,60 @@ from config import settings
 setup_logging()
 logger = logging.getLogger(__name__)
 
+# Initialize Sentry
+init_sentry()
+
+# Initialize OpenTelemetry
+init_telemetry()
+
 # Initialize CSRF protection
 init_csrf_protection(settings.secret_key)
+
+# Add rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# Metrics middleware
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration = time.time() - start_time
+    
+    # Record metrics
+    record_request(
+        method=request.method,
+        endpoint=request.url.path,
+        status_code=response.status_code,
+        duration=duration
+    )
+    
+    return response
+
+# Global exception handler for Sentry
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler with Sentry integration"""
+    # Capture exception in Sentry with context
+    user_id = getattr(request.state, 'user_id', None)
+    capture_api_error(
+        exc, 
+        endpoint=request.url.path, 
+        method=request.method, 
+        user_id=user_id
+    )
+    
+    logger.error(f"Unhandled exception: {exc}", extra={
+        "endpoint": request.url.path,
+        "method": request.method,
+        "user_id": user_id
+    }, exc_info=True)
+    
+    # Return generic error response
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Internal server error"
+    )
 
 # Create database tables (if they don't exist)
 try:
@@ -67,6 +127,8 @@ app.include_router(password_audit_router)
 
 # Add security and logging middleware
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SentryContextMiddleware)
+app.add_middleware(JWTValidationMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(LoggingMiddleware)
 
@@ -120,7 +182,46 @@ async def health_check():
 
 @app.get("/health")
 async def health_check_simple():
+    """Simple health check"""
     return {"status": "ok"}
+
+@app.get("/health/detailed")
+async def health_check_detailed(db: Session = Depends(get_db)):
+    """Detailed health check with dependencies"""
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "saas-backend",
+        "version": settings.app_version,
+        "environment": settings.environment,
+        "checks": {}
+    }
+    
+    # Database health check
+    try:
+        db.execute("SELECT 1")
+        health_status["checks"]["database"] = {"status": "healthy", "response_time_ms": 0}
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}
+    
+    # Sentry health check
+    try:
+        if hasattr(settings, 'sentry_dsn') and settings.sentry_dsn:
+            health_status["checks"]["sentry"] = {"status": "configured"}
+        else:
+            health_status["checks"]["sentry"] = {"status": "not_configured"}
+    except Exception:
+        health_status["checks"]["sentry"] = {"status": "error"}
+    
+    return health_status
+
+@app.get("/metrics")
+async def metrics_endpoint():
+    """Prometheus metrics endpoint"""
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from fastapi.responses import Response
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 # Authentication endpoints
 # Legacy auth endpoints (deprecated - use /api/v1/auth instead)

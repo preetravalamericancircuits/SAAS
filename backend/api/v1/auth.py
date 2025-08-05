@@ -8,13 +8,18 @@ from auth import create_access_token, create_refresh_token, verify_token, verify
 from rate_limiter import check_auth_rate_limit, check_login_rate_limit, rate_limiter
 from security_monitor import security_monitor
 from csrf_protection import require_csrf_protection, csrf_protection
+from slowapi_limiter import limiter
+from sentry_config import capture_auth_error
+from telemetry import record_auth_attempt, record_active_user
 from config import settings
+import sentry_sdk
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=RegisterResponse)
-async def register(register_data: RegisterRequest, request: Request, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit), _csrf: None = Depends(require_csrf_protection)):
+@limiter.limit("5/minute")
+async def register(request: Request, register_data: RegisterRequest, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit), _csrf: None = Depends(require_csrf_protection)):
     """Register a new user"""
     # Check if user already exists
     existing_user = db.query(User).filter(User.username == register_data.username).first()
@@ -63,7 +68,8 @@ async def register(register_data: RegisterRequest, request: Request, db: Session
     )
 
 @router.post("/login", response_model=LoginResponse)
-async def login(login_data: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db), _: None = Depends(check_login_rate_limit), _csrf: None = Depends(require_csrf_protection)):
+@limiter.limit("3/minute")
+async def login(request: Request, login_data: LoginRequest, response: Response, db: Session = Depends(get_db), _: None = Depends(check_login_rate_limit), _csrf: None = Depends(require_csrf_protection)):
     """Login user and return JWT token with HTTP-only cookie"""
     logger.info("Login attempt", extra={
         "username": login_data.username,
@@ -77,6 +83,18 @@ async def login(login_data: LoginRequest, response: Response, request: Request, 
         client_ip = request.client.host if request.client else "unknown"
         rate_limiter.record_failed_login(request, login_data.username)
         security_monitor.log_failed_login(client_ip, login_data.username)
+        
+        # Record failed auth attempt in metrics
+        record_auth_attempt(login_data.username, False)
+        
+        # Capture failed login in Sentry
+        with sentry_sdk.configure_scope() as scope:
+            scope.set_tag("event_type", "failed_login")
+            scope.set_context("login_attempt", {
+                "username": login_data.username,
+                "ip_address": client_ip
+            })
+            sentry_sdk.capture_message("Failed login attempt", level="warning")
         
         logger.warning("Failed login attempt", extra={
             "username": login_data.username,
@@ -121,6 +139,17 @@ async def login(login_data: LoginRequest, response: Response, request: Request, 
     rate_limiter.clear_failed_attempts(request, login_data.username)
     security_monitor.log_successful_login(client_ip, login_data.username)
     
+    # Record successful auth attempt in metrics
+    record_auth_attempt(login_data.username, True)
+    record_active_user("login")
+    
+    # Set user context in Sentry
+    sentry_sdk.set_user({
+        "id": user.id,
+        "username": user.username,
+        "role": user.role.name if user.role else None
+    })
+    
     logger.info("Successful login", extra={
         "user_id": user.id,
         "username": user.username,
@@ -143,13 +172,18 @@ async def login(login_data: LoginRequest, response: Response, request: Request, 
     )
 
 @router.post("/logout")
-async def logout(response: Response, request: Request, _csrf: None = Depends(require_csrf_protection)):
+@limiter.limit("10/minute")
+async def logout(request: Request, response: Response, _csrf: None = Depends(require_csrf_protection)):
     """Logout user (clear cookies)"""
+    # Record user logout in metrics
+    record_active_user("logout")
+    
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
     return {"message": "Successfully logged out"}
 
 @router.post("/refresh", response_model=LoginResponse)
+@limiter.limit("10/minute")
 async def refresh_token(request: Request, response: Response, db: Session = Depends(get_db), _: None = Depends(check_auth_rate_limit), _csrf: None = Depends(require_csrf_protection)):
     """Refresh access token using refresh token"""
     refresh_token = request.cookies.get("refresh_token")
