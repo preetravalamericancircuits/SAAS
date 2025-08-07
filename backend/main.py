@@ -129,6 +129,7 @@ app.include_router(v1_router, prefix="/api")
 app.include_router(version_router, prefix="/api", tags=["API Info"])
 
 # Include health check router
+from api.health import health_router
 app.include_router(health_router)
 
 # Include password audit router
@@ -140,7 +141,7 @@ app.add_middleware(SentryContextMiddleware)
 app.add_middleware(JWTValidationMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(BusinessFlowMiddleware)
+# app.add_middleware(BusinessFlowMiddleware)  # Removed because BusinessFlowMiddleware is not defined
 
 # Input sanitization middleware
 @app.middleware("http")
