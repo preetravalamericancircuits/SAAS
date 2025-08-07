@@ -3,3 +3,7 @@ fastapi==0.115.12
 uvicorn[standard]==0.34.2
 pydantic==2.11.3
 python-multipart==0.0.20
+
+# Updated packages to fix vulnerabilities
+requests==2.32.4
+starlette==0.47.2

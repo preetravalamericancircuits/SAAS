@@ -1,0 +1,127 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "SaaS Backend Monitoring Dashboard",
+    "tags": ["saas", "backend", "monitoring"],
+    "timezone": "browser",
+    "refresh": "5s",
+    "time": {"from": "now-1h", "to": "now"},
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"saas-backend\"}",
+            "legendFormat": "Service Status"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 1},
+                {"color": "red", "value": 0}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 18, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "User Registrations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(user_registrations_total[5m])",
+            "legendFormat": "Registrations/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Authentication Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(auth_success_total[5m])",
+            "legendFormat": "Successful logins/sec"
+          },
+          {
+            "expr": "rate(auth_failure_total[5m])",
+            "legendFormat": "Failed logins/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Business Flow Completions",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(business_flow_completions_total[5m])",
+            "legendFormat": "{{flow_name}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 24, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Active Users",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "active_users_gauge",
+            "legendFormat": "Active Users"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(errors_total[5m])",
+            "legendFormat": "{{error_type}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 18, "x": 6, "y": 16}
+      }
+    ]
+  }
+}

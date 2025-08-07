@@ -25,10 +25,10 @@ class JWTValidationMiddleware(BaseHTTPMiddleware):
     
     # Routes that require authentication
     PROTECTED_PATHS = {
-        "/api/v1/auth/logout",
-        "/api/v1/auth/refresh",
-        "/api/v1/me/",
-        "/api/v1/users/",
+        "/api/v1/auth/logout", # Example
+        "/api/v1/auth/refresh", # Example
+        "/api/v1/me",
+        "/api/v1/users",
         "/api/v1/secure-files"
     }
     

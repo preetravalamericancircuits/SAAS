@@ -56,6 +56,12 @@ init_telemetry()
 # Initialize CSRF protection
 init_csrf_protection(settings.secret_key)
 
+app = FastAPI(
+    title="ACI API",
+    description="Internal SaaS Application API with Role-Based Access Control",
+    version="1.0.0"
+)
+
 # Add rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -122,6 +128,9 @@ from api.versioning import version_router
 app.include_router(v1_router, prefix="/api")
 app.include_router(version_router, prefix="/api", tags=["API Info"])
 
+# Include health check router
+app.include_router(health_router)
+
 # Include password audit router
 app.include_router(password_audit_router)
 
@@ -131,6 +140,7 @@ app.add_middleware(SentryContextMiddleware)
 app.add_middleware(JWTValidationMiddleware)
 app.add_middleware(SecurityMiddleware)
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(BusinessFlowMiddleware)
 
 # Input sanitization middleware
 @app.middleware("http")

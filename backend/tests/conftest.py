@@ -65,3 +65,19 @@ def admin_user(db_session):
     db_session.commit()
     db_session.refresh(user)
     return user
+
+@pytest.fixture
+def authenticated_client(client: TestClient, test_user) -> TestClient:
+    """
+    Provides a TestClient instance that is pre-authenticated for the 'testuser'.
+    """
+    # Login to get the token
+    login_response = client.post("/api/v1/auth/login", json={
+        "username": "testuser",
+        "password": "testpass123"
+    })
+    token = login_response.json()["access_token"]
+    
+    # Set the authorization header for subsequent requests
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client

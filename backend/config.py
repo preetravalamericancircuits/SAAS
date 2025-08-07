@@ -1,45 +1,48 @@
-from pydantic_settings import BaseSettings
-from typing import Optional
+from pydantic import BaseSettings
+from typing import List, Optional
+import os
 
 class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql://aci_user:aci_password@localhost:5432/aci_db"
     
     # Security
-    secret_key: str = "your-secret-key-here-change-in-production"
+    secret_key: str = "your-secret-key-here"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
-    refresh_token_expire_days: int = 7
+    
+    # Redis Configuration
+    redis_url: str = "redis://localhost:6379"
+    redis_password: str = "redis_password"
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    
+    # CDN Configuration
+    cdn_url: Optional[str] = None
+    cdn_enabled: bool = False
+    
+    # Cache Configuration
+    cache_ttl: int = 3600  # 1 hour default
+    cache_prefix: str = "saas_cache"
     
     # Environment
     environment: str = "development"
-    debug: bool = True
+    debug: bool = False
     
-    # Logging
-    log_level: str = "DEBUG"
-    log_format: str = "detailed"
-    log_file_max_size: int = 10485760  # 10MB
-    log_file_backup_count: int = 5
+    # CORS
+    cors_origins: List[str] = ["http://localhost:3000"]
+    
+    # Rate Limiting
+    rate_limit_per_minute: int = 60
     
     # Sentry
-    sentry_dsn: str = ""
+    sentry_dsn: Optional[str] = None
+    
+    # Application
     app_version: str = "1.0.0"
-    
-    # CORS Configuration
-    allowed_origins: list = ["http://localhost:3000", "http://frontend:3000"]
-    allowed_methods: list = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allowed_headers: list = ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"]
-    allow_credentials: bool = True
-    max_age: int = 86400  # 24 hours
-    
-    @property
-    def cors_origins(self) -> list:
-        if self.environment == "production":
-            return [origin for origin in self.allowed_origins if not origin.startswith("http://localhost")]
-        return self.allowed_origins
     
     class Config:
         env_file = ".env"
-        extra = "ignore"
 
-settings = Settings() 
+settings = Settings()
