@@ -6,6 +6,31 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { Inter, Roboto } from 'next/font/google';
+import React from 'react';
+
+// Simple ErrorBoundary implementation
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    // You can log error to an error reporting service here
+    console.error('ErrorBoundary caught an error', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
 
 // Optimize Google Fonts with next/font
 const inter = Inter({
